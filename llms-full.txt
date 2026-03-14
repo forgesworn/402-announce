@@ -1,0 +1,222 @@
+# 402-announce — Full Reference
+
+> Announce HTTP 402 services on Nostr for decentralised discovery.
+> Supports both L402 and x402 payment protocols.
+> Source: https://github.com/TheCryptoDonkey/402-announce
+
+## Overview
+
+402-announce is a TypeScript library that publishes kind 31402 Nostr events describing paid HTTP APIs. These events enable decentralised service discovery — AI agents and Nostr clients can find, evaluate, and pay for APIs without a central registry.
+
+The library handles event construction, signing, and multi-relay publication. Secret key material is zeroised after use.
+
+## Installation
+
+```bash
+npm install 402-announce
+```
+
+Requires Node.js >= 18. ESM only. Single runtime dependency: nostr-tools.
+
+## API Reference
+
+### announceService(config: AnnounceConfig): Promise<Announcement>
+
+High-level function: builds a kind 31402 event, signs it, connects to relays in parallel, and publishes.
+
+**Parameters:**
+
+AnnounceConfig:
+  - secretKey (string, required): 64-character hex-encoded Nostr secret key
+  - relays (string[], required): Relay URLs (must start with wss:// or ws://)
+  - identifier (string, required): Unique listing ID, used as the Nostr `d` tag. Same pubkey + identifier = same listing.
+  - name (string, required): Human-readable service name
+  - url (string, required): HTTP endpoint where the 402 service is accessible
+  - about (string, required): Short description of the service
+  - pricing (PricingDef[], required): Per-capability pricing. Each entry: { capability, price, currency }
+  - paymentMethods (string[], required): Accepted payment method identifiers
+  - picture (string, optional): Icon URL
+  - topics (string[], optional): Topic tags for search/filtering
+  - capabilities (CapabilityDef[], optional): Capability details stored in event content
+  - version (string, optional): Service version stored in event content
+
+PricingDef:
+  - capability (string): Capability name (e.g. "get_joke", "chat", "inference")
+  - price (number): Price amount
+  - currency (string): Currency unit (e.g. "sats", "USD")
+
+CapabilityDef:
+  - name (string): Capability name
+  - description (string): Human-readable description
+
+**Returns** Announcement:
+  - eventId (string): The published Nostr event ID
+  - pubkey (string): Nostr pubkey derived from the secret key
+  - close(): void — Disconnect from all connected relays
+
+**Behaviour:**
+  - Validates secretKey (must be 64-char hex) and relay URLs (must be wss:// or ws://)
+  - Connects to all relays in parallel with a 10-second timeout per relay
+  - Individual relay failures are logged as warnings but do not reject the promise
+  - If no relay accepts the event, a warning is emitted (but the promise still resolves)
+  - Secret key bytes are zeroised after signing
+
+**Throws:**
+  - If secretKey is not a 64-character hex string
+  - If relays array is empty
+  - If any relay URL does not start with wss:// or ws://
+
+### buildAnnounceEvent(secretKeyHex: string, config: Omit<AnnounceConfig, 'relays'>): VerifiedEvent
+
+Lower-level function: builds and signs the kind 31402 event without publishing. Use this if you manage relay connections yourself.
+
+**Returns** a nostr-tools VerifiedEvent ready for relay publication.
+
+Secret key bytes are zeroised after signing (via try/finally).
+
+### Constants
+
+- L402_ANNOUNCE_KIND = 31402 — The Nostr event kind for service announcements
+
+### Exported types
+
+- AnnounceConfig — Configuration for announceService()
+- Announcement — Handle returned by announceService()
+- PricingDef — Pricing for a specific capability
+- CapabilityDef — Capability with description
+
+## Event Format Specification
+
+### Kind 31402 — Parameterised Replaceable Event
+
+A kind 31402 event is a Nostr parameterised replaceable event (NIP-33). This means:
+- The combination of pubkey + kind + d-tag uniquely identifies a listing
+- Publishing a new event with the same pubkey + kind + d-tag replaces the previous one
+- This allows services to update their announcements (e.g. change pricing) without creating duplicates
+
+### Tag structure
+
+Required tags:
+  ["d", "<identifier>"]           — Unique listing identifier
+  ["name", "<service name>"]      — Human-readable name
+  ["url", "<endpoint URL>"]       — HTTP endpoint
+  ["about", "<description>"]      — Short description
+  ["pmi", "<payment method>"]     — Payment method identifier (one tag per method)
+  ["price", "<capability>", "<amount>", "<currency>"]  — Pricing (one tag per capability)
+
+Optional tags:
+  ["t", "<topic>"]                — Topic tag for filtering (one tag per topic)
+  ["picture", "<icon URL>"]       — Service icon
+
+### Content field
+
+JSON object with optional fields:
+{
+  "capabilities": [
+    { "name": "get_joke", "description": "Returns a random joke" }
+  ],
+  "version": "1.0.0"
+}
+
+### Example event
+
+{
+  "kind": 31402,
+  "pubkey": "ab1234...ef5678",
+  "created_at": 1710000000,
+  "tags": [
+    ["d", "jokes-api"],
+    ["name", "Jokes API"],
+    ["url", "https://jokes.example.com"],
+    ["about", "A joke-telling service behind an L402 paywall"],
+    ["pmi", "bitcoin-lightning-bolt11"],
+    ["pmi", "bitcoin-cashu"],
+    ["price", "get_joke", "1", "sats"],
+    ["t", "comedy"],
+    ["t", "ai"]
+  ],
+  "content": "{\"capabilities\":[{\"name\":\"get_joke\",\"description\":\"Returns a random joke\"}],\"version\":\"1.0.0\"}",
+  "id": "...",
+  "sig": "..."
+}
+
+## Payment Method Identifiers
+
+Known payment method identifiers for the `pmi` tag and `paymentMethods` config:
+
+  bitcoin-lightning-bolt11   — Lightning Network BOLT-11 invoices
+  bitcoin-cashu              — Cashu ecash tokens
+  bitcoin-onchain            — On-chain Bitcoin
+  x402-evm                   — x402 protocol on EVM chains
+  x402-solana                — x402 protocol on Solana
+
+## Integration Patterns
+
+### Producer side: toll-booth + 402-announce
+
+A typical server setup protects an API with toll-booth and announces it with 402-announce:
+
+```typescript
+import { createTollBooth } from 'toll-booth'
+import { announceService } from '402-announce'
+
+// 1. Protect your API with a paywall
+const booth = createTollBooth({ /* payment config */ })
+app.use('/api', booth.middleware)
+
+// 2. Announce it on Nostr
+const handle = await announceService({
+  secretKey: process.env.NOSTR_SECRET_KEY,
+  relays: ['wss://relay.damus.io'],
+  identifier: 'my-api',
+  name: 'My API',
+  url: 'https://api.example.com',
+  about: 'A paid API service',
+  pricing: [{ capability: 'query', price: 10, currency: 'sats' }],
+  paymentMethods: ['bitcoin-lightning-bolt11'],
+})
+
+// 3. Clean up on shutdown
+process.on('SIGTERM', () => handle.close())
+```
+
+### Consumer side: 402-mcp
+
+AI agents use 402-mcp to discover and consume announced services:
+
+1. 402-mcp subscribes to kind 31402 events on configured relays
+2. Agent searches for services by topic, capability, or payment method
+3. 402-mcp handles L402 payment negotiation automatically
+4. Agent receives the API response
+
+The agent never needs to know about Nostr or payment protocols — 402-mcp abstracts it all.
+
+### Updating a listing
+
+Because kind 31402 is a parameterised replaceable event, calling announceService() again with the same identifier and pubkey replaces the previous listing. Use this to update pricing, add capabilities, or change the endpoint URL.
+
+## Security Considerations
+
+- **Key zeroisation**: Secret key bytes (Uint8Array) are filled with zeros immediately after signing, in both announceService() and buildAnnounceEvent(). This limits the window during which key material exists in memory.
+- **Key handling**: Pass the secret key as a hex string. The library converts to bytes, signs, and zeroises. Never log or persist the key yourself.
+- **Relay trust**: Relays are untrusted infrastructure. Events are cryptographically signed — relay operators cannot forge announcements. However, relays can choose not to store or serve your events.
+- **Connection timeouts**: Relay connections time out after 10 seconds to prevent indefinite hangs.
+- **Graceful degradation**: If some relays fail, the event is still published to the others. A warning is emitted only if no relay accepts the event.
+
+## Error Handling
+
+The library throws synchronously for invalid configuration:
+- secretKey not 64-char hex → Error
+- Empty relays array → Error
+- Invalid relay URL (not wss:// or ws://) → Error
+
+Relay-level failures during publication are handled gracefully:
+- Connection timeouts → warning logged, other relays still tried
+- Publish rejections → warning logged, other relays still tried
+- All relays fail → warning logged, promise resolves with eventId from the signed event
+
+## Source
+
+Repository: https://github.com/TheCryptoDonkey/402-announce
+Licence: MIT
+Runtime dependency: nostr-tools

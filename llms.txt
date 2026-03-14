@@ -1,0 +1,36 @@
+# 402-announce
+
+> Announce HTTP 402 services on Nostr for decentralised discovery
+
+## What it does
+
+402-announce publishes kind 31402 parameterised replaceable Nostr events that describe paid HTTP APIs. AI agents and Nostr clients discover these announcements to find services they can pay for and consume — no central registry needed.
+
+## Key concepts
+
+- **Kind 31402**: Nostr event kind for L402/x402 service announcements. Parameterised replaceable — same pubkey + identifier updates the existing listing.
+- **Payment methods**: Services declare accepted payment methods via `pmi` tags (e.g. `bitcoin-lightning-bolt11`, `bitcoin-cashu`).
+- **Pricing**: Per-capability pricing via `price` tags (capability name, amount, currency).
+- **Decentralised discovery**: Events are published to standard Nostr relays. Any client can subscribe and filter.
+
+## API surface
+
+Two exports:
+
+- `announceService(config)` — build, sign, and publish to relays. Returns `{ eventId, pubkey, close() }`.
+- `buildAnnounceEvent(secretKey, config)` — build and sign without publishing. Returns a `VerifiedEvent`.
+
+## Ecosystem position
+
+```
+toll-booth (paywall) → protects your API
+402-announce (this)  → tells the world your API exists
+402-mcp (discovery)  → AI agents find, pay, and consume your API
+```
+
+## Details
+
+For full API reference, event format, integration patterns, and examples see:
+- llms-full.txt (comprehensive reference)
+- README.md (human-oriented documentation with diagrams)
+- Source: https://github.com/TheCryptoDonkey/402-announce

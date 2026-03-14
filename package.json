@@ -15,7 +15,9 @@
   "files": [
     "build",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "llms.txt",
+    "llms-full.txt"
   ],
   "scripts": {
     "build": "tsc",
