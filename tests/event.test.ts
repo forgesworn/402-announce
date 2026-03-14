@@ -185,40 +185,17 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
-  describe('url SSRF prevention', () => {
-    const privateUrls = [
-      'https://localhost/api',
-      'https://127.0.0.1/api',
-      'https://10.0.0.1/api',
-      'https://192.168.1.1/api',
-      'https://172.16.0.1/api',
-      'https://169.254.169.254/latest/meta-data/',
-      'https://100.64.0.1/api',
-      'https://[::1]/api',
-    ]
-
-    for (const url of privateUrls) {
-      it(`rejects private url: ${url}`, () => {
-        expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url }))).toThrow('private/loopback')
-      })
-    }
-
-    it('accepts public url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://api.example.com' }))).not.toThrow()
-    })
-  })
-
-  describe('picture SSRF prevention', () => {
-    it('rejects private picture url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://192.168.1.1/icon.png' }))).toThrow('private/loopback')
+  describe('url allows private hosts (no network I/O)', () => {
+    it('accepts localhost url in buildAnnounceEvent', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://localhost:3000/api' }))).not.toThrow()
     })
 
-    it('rejects CGNAT picture url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://100.100.0.1/icon.png' }))).toThrow('private/loopback')
+    it('accepts private IP url in buildAnnounceEvent', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://192.168.1.1/api' }))).not.toThrow()
     })
 
-    it('accepts public picture url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://cdn.example.com/icon.png' }))).not.toThrow()
+    it('accepts private picture url in buildAnnounceEvent', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://10.0.0.1/icon.png' }))).not.toThrow()
     })
   })
 

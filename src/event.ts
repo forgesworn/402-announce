@@ -1,6 +1,6 @@
 import { finalizeEvent } from 'nostr-tools/pure'
 import { L402_ANNOUNCE_KIND } from './types.js'
-import { hexToBytes, isPrivateHost } from './utils.js'
+import { hexToBytes } from './utils.js'
 import type { AnnounceConfig } from './types.js'
 import type { VerifiedEvent } from 'nostr-tools/pure'
 
@@ -22,25 +22,16 @@ export function buildAnnounceEvent(
     throw new Error('secretKey must be a 64-character hex string')
   }
 
-  // M1: Validate url field
+  // M1: Validate url field (scheme only — this function serialises the URL
+  // into event tags without performing network I/O, so private hosts are allowed)
   if (!config.url.startsWith('http://') && !config.url.startsWith('https://')) {
     throw new Error('config.url must start with http:// or https://')
-  }
-  {
-    const parsedUrl = new URL(config.url)
-    if (isPrivateHost(parsedUrl.hostname)) {
-      throw new Error('config.url must not point to a private/loopback address')
-    }
   }
 
   // M1: Validate picture field when present
   if (config.picture !== undefined) {
     if (!config.picture.startsWith('http://') && !config.picture.startsWith('https://')) {
       throw new Error('config.picture must start with http:// or https://')
-    }
-    const parsedPicture = new URL(config.picture)
-    if (isPrivateHost(parsedPicture.hostname)) {
-      throw new Error('config.picture must not point to a private/loopback address')
     }
   }
 
