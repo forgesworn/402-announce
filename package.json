@@ -12,7 +12,11 @@
       "types": "./build/index.d.ts"
     }
   },
-  "files": ["build", "LICENSE", "README.md"],
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -23,16 +27,26 @@
     "nostr-tools": "^2.12.0"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "typescript": "^5.7.0",
     "vitest": "^4.0.0"
   },
   "keywords": [
-    "l402", "nostr", "discovery", "lightning", "cashu",
-    "mcp", "ai-agents", "machine-payments", "http-402"
+    "l402",
+    "nostr",
+    "discovery",
+    "lightning",
+    "cashu",
+    "mcp",
+    "ai-agents",
+    "machine-payments",
+    "http-402"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/TheCryptoDonkey/l402-announce.git"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
