@@ -65,7 +65,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       const connectPromise = Relay.connect(url)
 
       let timedOut = false
-      let timerId: ReturnType<typeof setTimeout>
+      let timerId: ReturnType<typeof setTimeout> | undefined
       const relay = await Promise.race([
         connectPromise.then((r) => { clearTimeout(timerId); return r }),
         new Promise<never>((_, reject) => {

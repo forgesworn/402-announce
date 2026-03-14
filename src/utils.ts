@@ -88,9 +88,12 @@ export function isPrivateHost(hostname: string): boolean {
   // Reject pure decimal integer IPs (e.g. 2130706433)
   if (/^\d{1,10}$/.test(h) && !h.includes('.')) return true
 
-  // Reject shorthand IPv4 (1, 2, or 3 parts instead of 4)
+  // Reject shorthand IPv4 (2 or 3 parts instead of 4).
+  // Intentionally conservative: rejects ALL shorthand numeric forms, not just
+  // private ranges, because some OS stacks interpret e.g. 10.1 as 10.0.0.1.
+  // Single-part all-numeric is already handled above.
   const parts = h.split('.')
-  if (parts.length >= 1 && parts.length <= 3 && parts.every(p => /^\d+$/.test(p))) return true
+  if (parts.length >= 2 && parts.length <= 3 && parts.every(p => /^\d+$/.test(p))) return true
 
   // Parse dotted-decimal IPv4 (exactly 4 numeric parts)
   const ipv4 = h.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
