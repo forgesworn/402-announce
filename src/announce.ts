@@ -1,7 +1,6 @@
-import { getPublicKey } from 'nostr-tools/pure'
 import { Relay } from 'nostr-tools/relay'
 import { buildAnnounceEvent } from './event.js'
-import { hexToBytes } from './utils.js'
+import { isPrivateHost } from './utils.js'
 import type { AnnounceConfig, Announcement } from './types.js'
 
 /**
@@ -30,14 +29,27 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
     if (!/^wss?:\/\//i.test(url)) {
       throw new Error(`Invalid relay URL: ${url} — must start with wss:// or ws://`)
     }
+
+    // H3: Reject private/loopback relay URLs (SSRF prevention)
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    } catch {
+      throw new Error(`Invalid relay URL: ${url}`)
+    }
+    if (isPrivateHost(parsed.hostname)) {
+      throw new Error(`Relay URL points to a private/loopback address: ${url}`)
+    }
+
+    // M4: Warn on insecure ws:// usage
+    if (url.startsWith('ws://')) {
+      console.warn(
+        `[402-announce] Insecure WebSocket (ws://) relay: ${url} — use wss:// in production`,
+      )
+    }
   }
 
-  // Derive pubkey (zeroises sk bytes internally)
-  const skBytes = hexToBytes(secretKey)
-  const pubkey = getPublicKey(skBytes)
-  skBytes.fill(0)
-
-  // Build and sign the event
+  // Build and sign the event (H2: no redundant key decode — pubkey comes from the event)
   const event = buildAnnounceEvent(secretKey, config)
 
   // Connect to relays in parallel and publish
@@ -46,12 +58,34 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
 
   const results = await Promise.allSettled(
     relays.map(async (url) => {
+      // H4: Track the relay reference before the race so it can be closed on timeout.
+      // Relay.connect() is started, then we race against the timeout. If the timeout
+      // fires first we close the relay once the connect promise eventually resolves,
+      // preventing the connection from leaking in the background.
+      let relayRef: InstanceType<typeof Relay> | null = null
+      const connectPromise = Relay.connect(url).then((r) => {
+        relayRef = r
+        return r
+      })
+
+      let timedOut = false
       const relay = await Promise.race([
-        Relay.connect(url),
+        connectPromise,
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Relay connection timeout: ${url}`)), 10_000)
+          setTimeout(() => {
+            timedOut = true
+            reject(new Error(`Relay connection timeout: ${url}`))
+          }, 10_000),
         ),
-      ])
+      ]).catch(async (err) => {
+        // If the timeout fired, wait for the connect promise to settle so we
+        // can close any relay that connected after the deadline.
+        if (timedOut) {
+          connectPromise.then((r) => r.close()).catch(() => {})
+        }
+        throw err
+      })
+
       connectedRelays.push(relay)
       await relay.publish(event)
       accepted++
@@ -70,7 +104,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
 
   return {
     eventId: event.id,
-    pubkey,
+    pubkey: event.pubkey,
     close() {
       for (const relay of connectedRelays) {
         try {
