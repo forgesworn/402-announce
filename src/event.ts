@@ -85,7 +85,7 @@ export function buildAnnounceEvent(
     }
 
     const content = JSON.stringify(contentObj)
-    if (content.length > 65_536) {
+    if (Buffer.byteLength(content, 'utf8') > 65_536) {
       throw new Error('Event content exceeds maximum size (64 KiB)')
     }
 

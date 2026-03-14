@@ -82,8 +82,13 @@ export function isPrivateHost(hostname: string): boolean {
   // - Decimal integer: 2130706433
   // These are all valid in some URL parsers / OS network stacks.
 
-  // Reject hex IPv4 (contains 0x)
-  if (/^0x/i.test(h) || /\.0x/i.test(h)) return true
+  // Reject hex IPv4 literals (e.g. 0x7f000001 or 0x7f.0.0.1) but NOT
+  // legitimate DNS names with labels starting with 0x (e.g. 0xchat.example).
+  // A hex IPv4 has all dot-separated parts matching hex/numeric patterns.
+  if (/^0x/i.test(h)) {
+    const hexParts = h.split('.')
+    if (hexParts.every(p => /^(0x[0-9a-f]+|\d+)$/i.test(p))) return true
+  }
 
   // Reject pure decimal integer IPs (e.g. 2130706433)
   if (/^\d{1,10}$/.test(h) && !h.includes('.')) return true

@@ -202,6 +202,12 @@ describe('announceService', () => {
         expect(isPrivateHost('0x0a000001')).toBe(true)
       })
 
+      it('does not reject DNS names with 0x-prefixed labels', () => {
+        expect(isPrivateHost('0xchat.example')).toBe(false)
+        expect(isPrivateHost('relay.0xchat.example')).toBe(false)
+        expect(isPrivateHost('0x7f.example.com')).toBe(false)
+      })
+
       it('rejects shorthand IPv4 (fewer than 4 parts)', () => {
         expect(isPrivateHost('127.1')).toBe(true)       // 127.0.0.1
         expect(isPrivateHost('10.1')).toBe(true)         // 10.0.0.1

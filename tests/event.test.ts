@@ -296,6 +296,15 @@ describe('buildAnnounceEvent', () => {
       })
       expect(() => buildAnnounceEvent(config.secretKey, config)).not.toThrow()
     })
+
+    it('rejects multibyte content that exceeds 64 KiB in UTF-8 bytes', () => {
+      // 30k € characters = ~30k JS string length but ~90 KiB in UTF-8
+      const hugeSchema = { data: '\u20AC'.repeat(30_000) }
+      const config = makeConfig({
+        capabilities: [{ name: 'big', description: 'big', schema: hugeSchema }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('maximum size')
+    })
   })
 })
 
