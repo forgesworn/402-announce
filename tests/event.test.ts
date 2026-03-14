@@ -3,7 +3,6 @@ import { generateSecretKey } from 'nostr-tools/pure'
 import { buildAnnounceEvent } from '../src/event.js'
 import { L402_ANNOUNCE_KIND } from '../src/types.js'
 import type { AnnounceConfig } from '../src/types.js'
-import { isPrivateHost } from '../src/utils.js'
 
 function makeSecretKeyHex(): string {
   const sk = generateSecretKey()

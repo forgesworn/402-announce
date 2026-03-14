@@ -62,11 +62,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       // Relay.connect() is started, then we race against the timeout. If the timeout
       // fires first we close the relay once the connect promise eventually resolves,
       // preventing the connection from leaking in the background.
-      let relayRef: InstanceType<typeof Relay> | null = null
-      const connectPromise = Relay.connect(url).then((r) => {
-        relayRef = r
-        return r
-      })
+      const connectPromise = Relay.connect(url)
 
       let timedOut = false
       const relay = await Promise.race([
