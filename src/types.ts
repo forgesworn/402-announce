@@ -12,6 +12,10 @@ export interface PricingDef {
 export interface CapabilityDef {
   name: string
   description: string
+  /** Optional JSON Schema describing the capability's input parameters. */
+  schema?: unknown
+  /** Optional JSON Schema describing the capability's output. */
+  outputSchema?: unknown
 }
 
 /** Configuration for announceService(). */
@@ -36,6 +40,8 @@ export interface AnnounceConfig {
   paymentMethods: string[]
   /** Optional topic tags for search/filtering (e.g. ['ai', 'inference']) */
   topics?: string[]
+  /** Optional service status (UP, DOWN, or CLOSED). Omitted means unknown/not declared. */
+  status?: 'UP' | 'DOWN' | 'CLOSED'
   /** Optional capability details (goes in content field) */
   capabilities?: CapabilityDef[]
   /** Optional service version (goes in content field) */

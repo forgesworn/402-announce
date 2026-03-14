@@ -34,6 +34,10 @@ export function buildAnnounceEvent(
       tags.push(['picture', config.picture])
     }
 
+    if (config.status) {
+      tags.push(['status', config.status])
+    }
+
     for (const pm of config.paymentMethods) {
       tags.push(['pmi', pm])
     }

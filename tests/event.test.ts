@@ -140,4 +140,89 @@ describe('buildAnnounceEvent', () => {
     expect(() => buildAnnounceEvent('not-hex', baseConfig)).toThrow('64-character hex')
     expect(() => buildAnnounceEvent('ab'.repeat(16), baseConfig)).toThrow('64-character hex')
   })
+
+  describe('status tag', () => {
+    it('includes status tag when status is UP', () => {
+      const config = makeConfig({ status: 'UP' })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const statusTag = event.tags.find(t => t[0] === 'status')
+      expect(statusTag).toEqual(['status', 'UP'])
+    })
+
+    it('includes status tag when status is DOWN', () => {
+      const config = makeConfig({ status: 'DOWN' })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const statusTag = event.tags.find(t => t[0] === 'status')
+      expect(statusTag).toEqual(['status', 'DOWN'])
+    })
+
+    it('includes status tag when status is CLOSED', () => {
+      const config = makeConfig({ status: 'CLOSED' })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const statusTag = event.tags.find(t => t[0] === 'status')
+      expect(statusTag).toEqual(['status', 'CLOSED'])
+    })
+
+    it('omits status tag when status is not provided', () => {
+      const config = makeConfig()
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const statusTag = event.tags.find(t => t[0] === 'status')
+      expect(statusTag).toBeUndefined()
+    })
+  })
+
+  describe('capability schemas', () => {
+    it('includes schema and outputSchema in content when provided', () => {
+      const inputSchema = { type: 'object', properties: { count: { type: 'number' } } }
+      const outputSchema = { type: 'object', properties: { joke: { type: 'string' } } }
+      const config = makeConfig({
+        capabilities: [
+          {
+            name: 'get_joke',
+            description: 'Returns a random joke',
+            schema: inputSchema,
+            outputSchema,
+          },
+        ],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const content = JSON.parse(event.content)
+      expect(content.capabilities[0].schema).toEqual(inputSchema)
+      expect(content.capabilities[0].outputSchema).toEqual(outputSchema)
+    })
+
+    it('omits schema fields from content when not provided', () => {
+      const config = makeConfig({
+        capabilities: [{ name: 'get_joke', description: 'Returns a random joke' }],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const content = JSON.parse(event.content)
+      expect(content.capabilities[0]).toEqual({ name: 'get_joke', description: 'Returns a random joke' })
+      expect(content.capabilities[0].schema).toBeUndefined()
+      expect(content.capabilities[0].outputSchema).toBeUndefined()
+    })
+
+    it('supports capabilities with mixed schema presence', () => {
+      const inputSchema = { type: 'object' }
+      const config = makeConfig({
+        capabilities: [
+          { name: 'get_joke', description: 'Returns a random joke', schema: inputSchema },
+          { name: 'get_roast', description: 'Returns a roast' },
+        ],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+
+      const content = JSON.parse(event.content)
+      expect(content.capabilities[0].schema).toEqual(inputSchema)
+      expect(content.capabilities[0].outputSchema).toBeUndefined()
+      expect(content.capabilities[1].schema).toBeUndefined()
+      expect(content.capabilities[1].outputSchema).toBeUndefined()
+    })
+  })
 })
