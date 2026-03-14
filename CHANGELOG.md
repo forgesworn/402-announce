@@ -1,3 +1,12 @@
+## [1.1.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.0...v1.1.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* correct key zeroing documentation and remove redundant decode ([b52b5da](https://github.com/TheCryptoDonkey/402-announce/commit/b52b5da412eae32028be8fbc43c05c2161b1321e))
+* reject private/loopback relay URLs (SSRF prevention) ([7427753](https://github.com/TheCryptoDonkey/402-announce/commit/7427753b512899f1a664ba40c0a900885f473124))
+* remove dead relayRef variable and unused test imports ([64aa93a](https://github.com/TheCryptoDonkey/402-announce/commit/64aa93ae40735c9743ee060a638a6bc2f64f06d9))
+
 # [1.1.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.0.0...v1.1.0) (2026-03-14)
 
 
