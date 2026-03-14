@@ -24,12 +24,6 @@ tests/
   event.test.ts
 ```
 
-## Code style
-
-- British English (colour, initialise, behaviour)
-- ESM-only (`"type": "module"`, `.js` extensions in imports)
-- Strict TypeScript
-
 ## Gotchas
 
 - Import paths in src use `.js` extensions (Node16 module resolution)
