@@ -1,8 +1,8 @@
 {
-  "name": "@thecryptodonkey/l402-announce",
+  "name": "402-announce",
   "version": "0.0.1",
   "type": "module",
-  "description": "Announce L402 services on Nostr for decentralised discovery. Kind 31402 parameterised replaceable events.",
+  "description": "Announce HTTP 402 services (L402 and x402) on Nostr for decentralised discovery. Kind 31402 parameterised replaceable events.",
   "license": "MIT",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -33,6 +33,8 @@
   },
   "keywords": [
     "l402",
+    "x402",
+    "402",
     "nostr",
     "discovery",
     "lightning",
@@ -44,7 +46,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheCryptoDonkey/l402-announce.git"
+    "url": "https://github.com/TheCryptoDonkey/402-announce.git"
   },
   "engines": {
     "node": ">=18"

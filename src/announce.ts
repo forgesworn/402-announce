@@ -60,12 +60,12 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
 
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.warn(`[l402-announce] Failed to publish:`, result.reason)
+      console.warn(`[402-announce] Failed to publish:`, result.reason)
     }
   }
 
   if (accepted === 0) {
-    console.warn('[l402-announce] No relays accepted the event')
+    console.warn('[402-announce] No relays accepted the event')
   }
 
   return {

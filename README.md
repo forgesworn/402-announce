@@ -1,6 +1,6 @@
-# l402-announce
+# 402-announce
 
-Announce L402 services on Nostr for decentralised discovery.
+Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L402 and x402 payment protocols.
 
 [![MIT Licence](https://img.shields.io/badge/licence-MIT-blue.svg)](./LICENSE)
 
@@ -9,11 +9,11 @@ Publishes **kind 31402** parameterised replaceable events so that AI agents (and
 ## Quick start
 
 ```bash
-npm install @thecryptodonkey/l402-announce
+npm install 402-announce
 ```
 
 ```typescript
-import { announceService } from '@thecryptodonkey/l402-announce'
+import { announceService } from '402-announce'
 
 const handle = await announceService({
   secretKey: '64-char-hex-nostr-secret-key',
@@ -50,7 +50,7 @@ Each announcement is a **kind 31402** parameterised replaceable event. The combi
 |-----------|----------------------------------------------|-----------------------------------|
 | `d`       | Unique identifier for this listing           | `jokes-api`                       |
 | `name`    | Human-readable service name                  | `Jokes API`                       |
-| `url`     | HTTP endpoint for the L402 service           | `https://jokes.example.com`       |
+| `url`     | HTTP endpoint for the 402 service            | `https://jokes.example.com`       |
 | `about`   | Short description                            | `A joke-telling service`          |
 | `pmi`     | Payment method identifier (repeatable)       | `bitcoin-lightning-bolt11`        |
 | `price`   | Capability pricing (repeatable)              | `get_joke`, `1`, `sats`           |
