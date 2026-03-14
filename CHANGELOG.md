@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.0.0...v1.1.0) (2026-03-14)
+
+
+### Features
+
+* add optional status tag and capability schemas per NIP kind 31402 ([f38c7fe](https://github.com/TheCryptoDonkey/402-announce/commit/f38c7feaeb46d4f838c0e95a942efecc98cb410a))
+
 # 1.0.0 (2026-03-14)
 
 
