@@ -1,3 +1,12 @@
+## [1.1.2](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.1...v1.1.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* address Codex cross-check findings ([1e70861](https://github.com/TheCryptoDonkey/402-announce/commit/1e70861719799b7f978f7f0943cd531de5fe3dcc))
+* address re-review findings from security audit ([ce891ce](https://github.com/TheCryptoDonkey/402-announce/commit/ce891ceec8827d55c6f81a78f5aeb2c7ee0f29a3))
+* harden isPrivateHost against SSRF bypass vectors ([f9afd28](https://github.com/TheCryptoDonkey/402-announce/commit/f9afd28704b1e7ad8d48f6fd2abfa899b917f81a))
+
 ## [1.1.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.0...v1.1.1) (2026-03-14)
 
 
