@@ -65,14 +65,15 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       const connectPromise = Relay.connect(url)
 
       let timedOut = false
+      let timerId: ReturnType<typeof setTimeout>
       const relay = await Promise.race([
-        connectPromise,
-        new Promise<never>((_, reject) =>
-          setTimeout(() => {
+        connectPromise.then((r) => { clearTimeout(timerId); return r }),
+        new Promise<never>((_, reject) => {
+          timerId = setTimeout(() => {
             timedOut = true
             reject(new Error(`Relay connection timeout: ${url}`))
-          }, 10_000),
-        ),
+          }, 10_000)
+        }),
       ]).catch(async (err) => {
         // If the timeout fired, wait for the connect promise to settle so we
         // can close any relay that connected after the deadline.

@@ -84,11 +84,16 @@ export function buildAnnounceEvent(
       contentObj.version = config.version
     }
 
+    const content = JSON.stringify(contentObj)
+    if (content.length > 65_536) {
+      throw new Error('Event content exceeds maximum size (64 KiB)')
+    }
+
     const event = finalizeEvent(
       {
         kind: L402_ANNOUNCE_KIND,
         tags,
-        content: JSON.stringify(contentObj),
+        content,
         created_at: Math.floor(Date.now() / 1000),
       },
       sk,
