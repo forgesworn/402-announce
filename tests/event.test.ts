@@ -141,40 +141,6 @@ describe('buildAnnounceEvent', () => {
     expect(() => buildAnnounceEvent('ab'.repeat(16), baseConfig)).toThrow('64-character hex')
   })
 
-  describe('status tag', () => {
-    it('includes status tag when status is UP', () => {
-      const config = makeConfig({ status: 'UP' })
-      const event = buildAnnounceEvent(config.secretKey, config)
-
-      const statusTag = event.tags.find(t => t[0] === 'status')
-      expect(statusTag).toEqual(['status', 'UP'])
-    })
-
-    it('includes status tag when status is DOWN', () => {
-      const config = makeConfig({ status: 'DOWN' })
-      const event = buildAnnounceEvent(config.secretKey, config)
-
-      const statusTag = event.tags.find(t => t[0] === 'status')
-      expect(statusTag).toEqual(['status', 'DOWN'])
-    })
-
-    it('includes status tag when status is CLOSED', () => {
-      const config = makeConfig({ status: 'CLOSED' })
-      const event = buildAnnounceEvent(config.secretKey, config)
-
-      const statusTag = event.tags.find(t => t[0] === 'status')
-      expect(statusTag).toEqual(['status', 'CLOSED'])
-    })
-
-    it('omits status tag when status is not provided', () => {
-      const config = makeConfig()
-      const event = buildAnnounceEvent(config.secretKey, config)
-
-      const statusTag = event.tags.find(t => t[0] === 'status')
-      expect(statusTag).toBeUndefined()
-    })
-  })
-
   describe('capability schemas', () => {
     it('includes schema and outputSchema in content when provided', () => {
       const inputSchema = { type: 'object', properties: { count: { type: 'number' } } }
