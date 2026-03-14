@@ -1,6 +1,7 @@
 import { getPublicKey } from 'nostr-tools/pure'
 import { Relay } from 'nostr-tools/relay'
 import { buildAnnounceEvent } from './event.js'
+import { hexToBytes } from './utils.js'
 import type { AnnounceConfig, Announcement } from './types.js'
 
 /**
@@ -16,6 +17,10 @@ import type { AnnounceConfig, Announcement } from './types.js'
  */
 export async function announceService(config: AnnounceConfig): Promise<Announcement> {
   const { relays, secretKey } = config
+
+  if (!/^[0-9a-f]{64}$/i.test(secretKey)) {
+    throw new Error('secretKey must be a 64-character hex string')
+  }
 
   if (relays.length === 0) {
     throw new Error('At least one relay URL is required')
@@ -35,18 +40,27 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
   // Build and sign the event
   const event = buildAnnounceEvent(secretKey, config)
 
-  // Connect to relays and publish
+  // Connect to relays in parallel and publish
   const connectedRelays: InstanceType<typeof Relay>[] = []
   let accepted = 0
 
-  for (const url of relays) {
-    try {
-      const relay = await Relay.connect(url)
+  const results = await Promise.allSettled(
+    relays.map(async (url) => {
+      const relay = await Promise.race([
+        Relay.connect(url),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Relay connection timeout: ${url}`)), 10_000)
+        ),
+      ])
       connectedRelays.push(relay)
       await relay.publish(event)
       accepted++
-    } catch (err) {
-      console.warn(`[l402-announce] Failed to publish to ${url}:`, err)
+    }),
+  )
+
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.warn(`[l402-announce] Failed to publish:`, result.reason)
     }
   }
 
@@ -67,13 +81,4 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       }
     },
   }
-}
-
-/** Convert a hex string to Uint8Array. */
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2)
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
-  }
-  return bytes
 }

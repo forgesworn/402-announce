@@ -134,4 +134,10 @@ describe('buildAnnounceEvent', () => {
     expect(event.pubkey).toMatch(/^[0-9a-f]{64}$/)
     expect(event.created_at).toBeGreaterThan(0)
   })
+
+  it('rejects invalid secret key', () => {
+    const baseConfig = makeConfig()
+    expect(() => buildAnnounceEvent('not-hex', baseConfig)).toThrow('64-character hex')
+    expect(() => buildAnnounceEvent('ab'.repeat(16), baseConfig)).toThrow('64-character hex')
+  })
 })

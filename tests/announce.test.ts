@@ -87,4 +87,8 @@ describe('announceService', () => {
     result.close()
     expect(mockClose).toHaveBeenCalledTimes(3)
   })
+
+  it('rejects invalid secret key', async () => {
+    await expect(announceService({ ...makeConfig(), secretKey: 'bad' })).rejects.toThrow('64-character hex')
+  })
 })

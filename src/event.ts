@@ -1,5 +1,6 @@
 import { finalizeEvent } from 'nostr-tools/pure'
 import { L402_ANNOUNCE_KIND } from './types.js'
+import { hexToBytes } from './utils.js'
 import type { AnnounceConfig } from './types.js'
 import type { VerifiedEvent } from 'nostr-tools/pure'
 
@@ -16,6 +17,10 @@ export function buildAnnounceEvent(
   secretKeyHex: string,
   config: Omit<AnnounceConfig, 'relays'>,
 ): VerifiedEvent {
+  if (!/^[0-9a-f]{64}$/i.test(secretKeyHex)) {
+    throw new Error('secretKey must be a 64-character hex string')
+  }
+
   const sk = hexToBytes(secretKeyHex)
   try {
     const tags: string[][] = [
@@ -65,13 +70,4 @@ export function buildAnnounceEvent(
   } finally {
     sk.fill(0)
   }
-}
-
-/** Convert a hex string to Uint8Array. */
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2)
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
-  }
-  return bytes
 }
