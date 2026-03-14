@@ -3,6 +3,7 @@ import { generateSecretKey } from 'nostr-tools/pure'
 import { buildAnnounceEvent } from '../src/event.js'
 import { L402_ANNOUNCE_KIND } from '../src/types.js'
 import type { AnnounceConfig } from '../src/types.js'
+import { isPrivateHost } from '../src/utils.js'
 
 function makeSecretKeyHex(): string {
   const sk = generateSecretKey()
@@ -139,6 +140,94 @@ describe('buildAnnounceEvent', () => {
     const baseConfig = makeConfig()
     expect(() => buildAnnounceEvent('not-hex', baseConfig)).toThrow('64-character hex')
     expect(() => buildAnnounceEvent('ab'.repeat(16), baseConfig)).toThrow('64-character hex')
+  })
+
+  describe('url validation (M1)', () => {
+    it('accepts http:// and https:// urls', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://example.com' }))).not.toThrow()
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'http://example.com' }))).not.toThrow()
+    })
+
+    it('rejects javascript: url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'javascript:alert(1)' }))).toThrow('config.url must start with http')
+    })
+
+    it('rejects empty string url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: '' }))).toThrow('config.url must start with http')
+    })
+
+    it('rejects ftp:// url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'ftp://example.com' }))).toThrow('config.url must start with http')
+    })
+  })
+
+  describe('picture validation (M1)', () => {
+    it('accepts https:// picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://example.com/icon.png' }))).not.toThrow()
+    })
+
+    it('accepts http:// picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'http://example.com/icon.png' }))).not.toThrow()
+    })
+
+    it('rejects javascript: picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'javascript:alert(1)' }))).toThrow('config.picture must start with http')
+    })
+
+    it('rejects empty string picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: '' }))).toThrow('config.picture must start with http')
+    })
+
+    it('accepts undefined picture (no picture provided)', () => {
+      const config = makeConfig()
+      delete (config as any).picture
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), config)).not.toThrow()
+    })
+  })
+
+  describe('identifier validation (M2)', () => {
+    it('rejects empty identifier', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: '' }))).toThrow('must not be empty')
+    })
+
+    it('rejects whitespace-only identifier', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: '   ' }))).toThrow('must not be empty')
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: '\t\n' }))).toThrow('must not be empty')
+    })
+
+    it('rejects identifier longer than 256 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: 'a'.repeat(257) }))).toThrow('must not exceed 256 characters')
+    })
+
+    it('accepts identifier exactly 256 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: 'a'.repeat(256) }))).not.toThrow()
+    })
+
+    it('accepts a normal identifier', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: 'jokes-api-v2' }))).not.toThrow()
+    })
+  })
+
+  describe('price validation (M3)', () => {
+    it('rejects NaN price', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: NaN, currency: 'sats' }] }))).toThrow('finite non-negative number')
+    })
+
+    it('rejects Infinity price', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: Infinity, currency: 'sats' }] }))).toThrow('finite non-negative number')
+    })
+
+    it('rejects negative price', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: -1, currency: 'sats' }] }))).toThrow('finite non-negative number')
+    })
+
+    it('accepts price of zero', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: 0, currency: 'sats' }] }))).not.toThrow()
+    })
+
+    it('accepts positive price', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: 100, currency: 'sats' }] }))).not.toThrow()
+    })
   })
 
   describe('capability schemas', () => {
