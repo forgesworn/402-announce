@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { generateSecretKey } from 'nostr-tools/pure'
 import { buildAnnounceEvent } from '../src/event.js'
+import { hexToBytes } from '../src/utils.js'
 import { L402_ANNOUNCE_KIND } from '../src/types.js'
 import type { AnnounceConfig } from '../src/types.js'
 
@@ -278,5 +279,41 @@ describe('buildAnnounceEvent', () => {
       expect(content.capabilities[1].schema).toBeUndefined()
       expect(content.capabilities[1].outputSchema).toBeUndefined()
     })
+  })
+
+  describe('content size limit', () => {
+    it('rejects content exceeding 64 KiB', () => {
+      const hugeSchema = { data: 'x'.repeat(70_000) }
+      const config = makeConfig({
+        capabilities: [{ name: 'big', description: 'big', schema: hugeSchema }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('maximum size')
+    })
+
+    it('accepts content under 64 KiB', () => {
+      const config = makeConfig({
+        capabilities: [{ name: 'small', description: 'small', schema: { type: 'object' } }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).not.toThrow()
+    })
+  })
+})
+
+describe('hexToBytes', () => {
+  it('converts valid hex to bytes', () => {
+    const bytes = hexToBytes('deadbeef')
+    expect(bytes).toEqual(new Uint8Array([0xde, 0xad, 0xbe, 0xef]))
+  })
+
+  it('rejects odd-length hex string', () => {
+    expect(() => hexToBytes('abc')).toThrow('even-length hex string')
+  })
+
+  it('rejects non-hex characters', () => {
+    expect(() => hexToBytes('gggg')).toThrow('even-length hex string')
+  })
+
+  it('accepts empty string', () => {
+    expect(hexToBytes('')).toEqual(new Uint8Array([]))
   })
 })

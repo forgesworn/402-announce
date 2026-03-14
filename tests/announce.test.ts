@@ -128,6 +128,16 @@ describe('announceService', () => {
       expect(isPrivateHost('localhost')).toBe(true)
     })
 
+    it('identifies localhost. (FQDN) as private', () => {
+      expect(isPrivateHost('localhost.')).toBe(true)
+    })
+
+    it('identifies *.localhost subdomains as private', () => {
+      expect(isPrivateHost('foo.localhost')).toBe(true)
+      expect(isPrivateHost('bar.baz.localhost')).toBe(true)
+      expect(isPrivateHost('foo.localhost.')).toBe(true)
+    })
+
     it('identifies 127.x.x.x as private', () => {
       expect(isPrivateHost('127.0.0.1')).toBe(true)
       expect(isPrivateHost('127.255.0.1')).toBe(true)
@@ -136,6 +146,10 @@ describe('announceService', () => {
     it('identifies ::1 as private', () => {
       expect(isPrivateHost('::1')).toBe(true)
       expect(isPrivateHost('[::1]')).toBe(true)
+    })
+
+    it('identifies :: (unspecified) as private', () => {
+      expect(isPrivateHost('::')).toBe(true)
     })
 
     it('identifies 10.x.x.x as private', () => {
@@ -158,8 +172,10 @@ describe('announceService', () => {
       expect(isPrivateHost('192.168.255.255')).toBe(true)
     })
 
-    it('identifies 0.0.0.0 as private', () => {
+    it('identifies entire 0.0.0.0/8 range as private', () => {
       expect(isPrivateHost('0.0.0.0')).toBe(true)
+      expect(isPrivateHost('0.1.0.0')).toBe(true)
+      expect(isPrivateHost('0.255.255.255')).toBe(true)
     })
 
     it('identifies 169.254.x.x as link-local', () => {
@@ -171,6 +187,65 @@ describe('announceService', () => {
       expect(isPrivateHost('8.8.8.8')).toBe(false)
       expect(isPrivateHost('1.1.1.1')).toBe(false)
       expect(isPrivateHost('relay.example.com')).toBe(false)
+    })
+
+    describe('SSRF bypass vectors', () => {
+      it('rejects octal IPv4 notation (leading zeros)', () => {
+        expect(isPrivateHost('0177.0.0.1')).toBe(true)   // 127.0.0.1 in octal
+        expect(isPrivateHost('012.0.0.1')).toBe(true)     // 10.0.0.1 in octal
+        expect(isPrivateHost('0300.0250.0.1')).toBe(true)  // 192.168.0.1 in octal
+      })
+
+      it('rejects hex IPv4 notation', () => {
+        expect(isPrivateHost('0x7f.0.0.1')).toBe(true)
+        expect(isPrivateHost('0x7f000001')).toBe(true)
+        expect(isPrivateHost('0x0a000001')).toBe(true)
+      })
+
+      it('rejects shorthand IPv4 (fewer than 4 parts)', () => {
+        expect(isPrivateHost('127.1')).toBe(true)       // 127.0.0.1
+        expect(isPrivateHost('10.1')).toBe(true)         // 10.0.0.1
+        expect(isPrivateHost('127.0.1')).toBe(true)      // 127.0.0.1
+      })
+
+      it('rejects decimal integer IPv4', () => {
+        expect(isPrivateHost('2130706433')).toBe(true)   // 127.0.0.1
+        expect(isPrivateHost('167772161')).toBe(true)    // 10.0.0.1
+      })
+
+      it('rejects IPv4-mapped IPv6 (dotted-quad form)', () => {
+        expect(isPrivateHost('::ffff:127.0.0.1')).toBe(true)
+        expect(isPrivateHost('::ffff:10.0.0.1')).toBe(true)
+        expect(isPrivateHost('::ffff:192.168.1.1')).toBe(true)
+        expect(isPrivateHost('::ffff:169.254.1.1')).toBe(true)
+      })
+
+      it('rejects IPv4-mapped IPv6 (hex form)', () => {
+        expect(isPrivateHost('::ffff:7f00:1')).toBe(true)    // 127.0.0.1
+        expect(isPrivateHost('::ffff:a00:1')).toBe(true)      // 10.0.0.1
+        expect(isPrivateHost('::ffff:c0a8:101')).toBe(true)   // 192.168.1.1
+      })
+
+      it('allows IPv4-mapped IPv6 with public IP', () => {
+        expect(isPrivateHost('::ffff:8.8.8.8')).toBe(false)
+        expect(isPrivateHost('::ffff:808:808')).toBe(false)   // 8.8.8.8
+      })
+
+      it('rejects IPv4-compatible IPv6 (deprecated)', () => {
+        expect(isPrivateHost('::127.0.0.1')).toBe(true)
+        expect(isPrivateHost('::10.0.0.1')).toBe(true)
+      })
+
+      it('rejects IPv6 unique-local (fc00::/7)', () => {
+        expect(isPrivateHost('fc00::1')).toBe(true)
+        expect(isPrivateHost('fd00::1')).toBe(true)
+        expect(isPrivateHost('fdff::1')).toBe(true)
+      })
+
+      it('rejects IPv6 link-local (fe80::/10)', () => {
+        expect(isPrivateHost('fe80::1')).toBe(true)
+        expect(isPrivateHost('febf::1')).toBe(true)
+      })
     })
   })
 

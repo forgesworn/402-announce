@@ -92,14 +92,16 @@ export function isPrivateHost(hostname: string): boolean {
   const parts = h.split('.')
   if (parts.length >= 1 && parts.length <= 3 && parts.every(p => /^\d+$/.test(p))) return true
 
-  // Parse strict dotted-decimal IPv4 (exactly 4 octets, no leading zeros)
-  const ipv4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  // Parse dotted-decimal IPv4 (exactly 4 numeric parts)
+  const ipv4 = h.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
   if (ipv4) {
-    // Reject leading zeros (octal notation bypass)
     const rawOctets = [ipv4[1], ipv4[2], ipv4[3], ipv4[4]]
+    // Reject leading zeros (octal notation bypass: 0177 = 127)
     for (const octet of rawOctets) {
       if (octet.length > 1 && octet.startsWith('0')) return true
     }
+    // Reject out-of-range octets (not valid decimal IPv4)
+    if (rawOctets.some(o => Number(o) > 255)) return false
     return isPrivateIPv4(h)
   }
 
