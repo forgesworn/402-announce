@@ -81,7 +81,7 @@ The event content is a JSON object with optional fields:
 ## What it does not do
 
 - Does not run an L402 paywall (use [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) for that)
-- Does not subscribe to or search for announcements (use [l402-mcp](https://github.com/TheCryptoDonkey/l402-mcp) for that)
+- Does not subscribe to or search for announcements (use [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) for that)
 - Does not handle payments or token verification
 
 ## Ecosystem
@@ -90,7 +90,7 @@ The event content is a JSON object with optional fields:
 |---------|---------|
 | [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) | L402 middleware -- any API becomes a toll booth in minutes |
 | [satgate](https://github.com/TheCryptoDonkey/satsgate) | Production L402 gateway with Lightning and Cashu support |
-| [l402-mcp](https://github.com/TheCryptoDonkey/l402-mcp) | MCP server for AI agents to discover, pay, and consume L402 APIs |
+| [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) | MCP server for AI agents to discover, pay, and consume 402 APIs |
 
 ## Licence
 
