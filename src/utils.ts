@@ -43,8 +43,8 @@ export function isPrivateHost(hostname: string): boolean {
   if (h === 'localhost' || h === 'localhost.') return true
   if (h.endsWith('.localhost') || h.endsWith('.localhost.')) return true
 
-  // Strip IPv6 brackets
-  const stripped = h.replace(/^\[|\]$/g, '')
+  // Strip IPv6 brackets and zone IDs (e.g. [::1%25eth0] → ::1)
+  const stripped = h.replace(/^\[|\]$/g, '').replace(/%.*$/, '')
 
   // IPv6 loopback ::1 and unspecified ::
   if (stripped === '::1' || stripped === '::') return true
@@ -54,6 +54,18 @@ export function isPrivateHost(hostname: string): boolean {
 
   // IPv6 unique-local fc00::/7 (fc00:: through fdff::)
   if (/^f[cd][0-9a-f]{2}:/i.test(stripped)) return true
+
+  // 6to4 (2002::/16) — embeds IPv4 in bits 16–47: 2002:AABB:CCDD::
+  const sixToFour = stripped.match(/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i)
+  if (sixToFour) {
+    const hi = parseInt(sixToFour[1], 16)
+    const lo = parseInt(sixToFour[2], 16)
+    const ip = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
+    return isPrivateIPv4(ip)
+  }
+
+  // Teredo (2001:0000::/32) — block the entire prefix rather than decode
+  if (/^2001:0{0,3}0:/i.test(stripped)) return true
 
   // IPv4-mapped IPv6 — ::ffff:x.x.x.x or ::ffff:HHHH:HHHH
   const v4mapped = stripped.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i)
@@ -127,5 +139,8 @@ function isPrivateIPv4(ip: string): boolean {
   if (a === 172 && b >= 16 && b <= 31) return true            // 172.16.0.0/12
   if (a === 192 && b === 168) return true                      // 192.168.0.0/16
   if (a === 169 && b === 254) return true                      // 169.254.0.0/16
+  if (a === 100 && b >= 64 && b <= 127) return true            // 100.64.0.0/10 (CGNAT / shared address space, RFC 6598)
+  if (a >= 240) return true                                     // 240.0.0.0/4 (reserved) + 255.255.255.255 (broadcast)
+  if (a === 198 && (b === 18 || b === 19)) return true         // 198.18.0.0/15 (benchmarking, RFC 2544)
   return false
 }

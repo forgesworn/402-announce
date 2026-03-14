@@ -24,6 +24,9 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
   if (relays.length === 0) {
     throw new Error('At least one relay URL is required')
   }
+  if (relays.length > 50) {
+    throw new Error('Too many relays (maximum 50)')
+  }
 
   for (const url of relays) {
     if (!/^wss?:\/\//i.test(url)) {
@@ -36,6 +39,9 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       parsed = new URL(url)
     } catch {
       throw new Error(`Invalid relay URL: ${url}`)
+    }
+    if (parsed.username || parsed.password) {
+      throw new Error(`Relay URL must not contain credentials: ${url}`)
     }
     if (isPrivateHost(parsed.hostname)) {
       throw new Error(`Relay URL points to a private/loopback address: ${url}`)
@@ -91,7 +97,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
 
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.warn(`[402-announce] Failed to publish:`, result.reason)
+      console.warn(`[402-announce] Failed to publish: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`)
     }
   }
 

@@ -1,6 +1,6 @@
 import { finalizeEvent } from 'nostr-tools/pure'
 import { L402_ANNOUNCE_KIND } from './types.js'
-import { hexToBytes } from './utils.js'
+import { hexToBytes, isPrivateHost } from './utils.js'
 import type { AnnounceConfig } from './types.js'
 import type { VerifiedEvent } from 'nostr-tools/pure'
 
@@ -26,11 +26,21 @@ export function buildAnnounceEvent(
   if (!config.url.startsWith('http://') && !config.url.startsWith('https://')) {
     throw new Error('config.url must start with http:// or https://')
   }
+  {
+    const parsedUrl = new URL(config.url)
+    if (isPrivateHost(parsedUrl.hostname)) {
+      throw new Error('config.url must not point to a private/loopback address')
+    }
+  }
 
   // M1: Validate picture field when present
   if (config.picture !== undefined) {
     if (!config.picture.startsWith('http://') && !config.picture.startsWith('https://')) {
       throw new Error('config.picture must start with http:// or https://')
+    }
+    const parsedPicture = new URL(config.picture)
+    if (isPrivateHost(parsedPicture.hostname)) {
+      throw new Error('config.picture must not point to a private/loopback address')
     }
   }
 
@@ -40,6 +50,24 @@ export function buildAnnounceEvent(
   }
   if (config.identifier.length > 256) {
     throw new Error('config.identifier must not exceed 256 characters')
+  }
+
+  // Tag field length limits
+  if (config.name.length > 256) {
+    throw new Error('config.name must not exceed 256 characters')
+  }
+  if (config.about.length > 4096) {
+    throw new Error('config.about must not exceed 4096 characters')
+  }
+  if (config.topics) {
+    if (config.topics.length > 50) {
+      throw new Error('config.topics must not exceed 50 entries')
+    }
+    for (const topic of config.topics) {
+      if (topic.length > 64) {
+        throw new Error(`config.topics entry must not exceed 64 characters, got: "${topic.slice(0, 20)}..."`)
+      }
+    }
   }
 
   // M3: Validate all pricing entries

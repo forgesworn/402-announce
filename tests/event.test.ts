@@ -185,6 +185,77 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
+  describe('url SSRF prevention', () => {
+    const privateUrls = [
+      'https://localhost/api',
+      'https://127.0.0.1/api',
+      'https://10.0.0.1/api',
+      'https://192.168.1.1/api',
+      'https://172.16.0.1/api',
+      'https://169.254.169.254/latest/meta-data/',
+      'https://100.64.0.1/api',
+      'https://[::1]/api',
+    ]
+
+    for (const url of privateUrls) {
+      it(`rejects private url: ${url}`, () => {
+        expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url }))).toThrow('private/loopback')
+      })
+    }
+
+    it('accepts public url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://api.example.com' }))).not.toThrow()
+    })
+  })
+
+  describe('picture SSRF prevention', () => {
+    it('rejects private picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://192.168.1.1/icon.png' }))).toThrow('private/loopback')
+    })
+
+    it('rejects CGNAT picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://100.100.0.1/icon.png' }))).toThrow('private/loopback')
+    })
+
+    it('accepts public picture url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://cdn.example.com/icon.png' }))).not.toThrow()
+    })
+  })
+
+  describe('name and about length validation', () => {
+    it('rejects name longer than 256 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: 'a'.repeat(257) }))).toThrow('must not exceed 256')
+    })
+
+    it('accepts name exactly 256 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: 'a'.repeat(256) }))).not.toThrow()
+    })
+
+    it('rejects about longer than 4096 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'a'.repeat(4097) }))).toThrow('must not exceed 4096')
+    })
+
+    it('accepts about exactly 4096 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'a'.repeat(4096) }))).not.toThrow()
+    })
+  })
+
+  describe('topics validation', () => {
+    it('rejects more than 50 topics', () => {
+      const topics = Array.from({ length: 51 }, (_, i) => `topic-${i}`)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics }))).toThrow('must not exceed 50')
+    })
+
+    it('rejects topic longer than 64 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics: ['a'.repeat(65)] }))).toThrow('must not exceed 64')
+    })
+
+    it('accepts 50 topics with valid lengths', () => {
+      const topics = Array.from({ length: 50 }, (_, i) => `topic-${i}`)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics }))).not.toThrow()
+    })
+  })
+
   describe('identifier validation (M2)', () => {
     it('rejects empty identifier', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: '' }))).toThrow('must not be empty')

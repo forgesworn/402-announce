@@ -117,8 +117,49 @@ describe('announceService', () => {
       })
     }
 
+    it('rejects CGNAT range relay', async () => {
+      const config = makeConfig({ relays: ['wss://100.64.0.1/relay'] })
+      await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
+    })
+
+    it('rejects reserved range relay (240.0.0.0/4)', async () => {
+      const config = makeConfig({ relays: ['wss://240.0.0.1/relay'] })
+      await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
+    })
+
+    it('rejects benchmarking range relay (198.18.0.0/15)', async () => {
+      const config = makeConfig({ relays: ['wss://198.18.0.1/relay'] })
+      await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
+    })
+
     it('accepts a public relay URL', async () => {
       const config = makeConfig({ relays: ['wss://relay.example.com'] })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+  })
+
+  describe('relay URL userinfo rejection', () => {
+    it('rejects relay URL with username', async () => {
+      const config = makeConfig({ relays: ['wss://user@relay.example.com'] })
+      await expect(announceService(config)).rejects.toThrow(/credentials/)
+    })
+
+    it('rejects relay URL with username and password', async () => {
+      const config = makeConfig({ relays: ['wss://user:pass@relay.example.com'] })
+      await expect(announceService(config)).rejects.toThrow(/credentials/)
+    })
+  })
+
+  describe('relay count limit', () => {
+    it('rejects more than 50 relays', async () => {
+      const relays = Array.from({ length: 51 }, (_, i) => `wss://relay${i}.example.com`)
+      const config = makeConfig({ relays })
+      await expect(announceService(config)).rejects.toThrow(/maximum 50/)
+    })
+
+    it('accepts exactly 50 relays', async () => {
+      const relays = Array.from({ length: 50 }, (_, i) => `wss://relay${i}.example.com`)
+      const config = makeConfig({ relays })
       await expect(announceService(config)).resolves.toBeDefined()
     })
   })
@@ -251,6 +292,54 @@ describe('announceService', () => {
       it('rejects IPv6 link-local (fe80::/10)', () => {
         expect(isPrivateHost('fe80::1')).toBe(true)
         expect(isPrivateHost('febf::1')).toBe(true)
+      })
+
+      it('rejects CGNAT / shared address space (100.64.0.0/10)', () => {
+        expect(isPrivateHost('100.64.0.1')).toBe(true)
+        expect(isPrivateHost('100.100.0.1')).toBe(true)
+        expect(isPrivateHost('100.127.255.255')).toBe(true)
+      })
+
+      it('does not flag 100.128+ as private', () => {
+        expect(isPrivateHost('100.128.0.1')).toBe(false)
+        expect(isPrivateHost('100.63.0.1')).toBe(false)
+      })
+
+      it('rejects reserved range 240.0.0.0/4', () => {
+        expect(isPrivateHost('240.0.0.1')).toBe(true)
+        expect(isPrivateHost('255.255.255.254')).toBe(true)
+        expect(isPrivateHost('255.255.255.255')).toBe(true)
+      })
+
+      it('rejects benchmarking range 198.18.0.0/15', () => {
+        expect(isPrivateHost('198.18.0.1')).toBe(true)
+        expect(isPrivateHost('198.19.255.255')).toBe(true)
+      })
+
+      it('does not flag 198.17 or 198.20 as private', () => {
+        expect(isPrivateHost('198.17.0.1')).toBe(false)
+        expect(isPrivateHost('198.20.0.1')).toBe(false)
+      })
+
+      it('rejects 6to4 addresses embedding private IPv4 (2002::/16)', () => {
+        expect(isPrivateHost('2002:7f00:0001::1')).toBe(true)   // 127.0.0.1
+        expect(isPrivateHost('2002:0a00:0001::1')).toBe(true)   // 10.0.0.1
+        expect(isPrivateHost('2002:c0a8:0101::1')).toBe(true)   // 192.168.1.1
+      })
+
+      it('allows 6to4 addresses embedding public IPv4', () => {
+        expect(isPrivateHost('2002:0808:0808::1')).toBe(false)  // 8.8.8.8
+      })
+
+      it('rejects Teredo addresses (2001:0000::/32)', () => {
+        expect(isPrivateHost('2001:0000:abcd::1')).toBe(true)
+        expect(isPrivateHost('2001:0:abcd::1')).toBe(true)
+      })
+
+      it('rejects IPv6 with zone ID suffix', () => {
+        expect(isPrivateHost('[::1%25eth0]')).toBe(true)
+        expect(isPrivateHost('::1%eth0')).toBe(true)
+        expect(isPrivateHost('fe80::1%eth0')).toBe(true)
       })
     })
   })
