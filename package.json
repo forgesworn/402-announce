@@ -50,6 +50,7 @@
     "machine-payments",
     "http-402"
   ],
+  "homepage": "https://github.com/TheCryptoDonkey/402-announce",
   "repository": {
     "type": "git",
     "url": "https://github.com/TheCryptoDonkey/402-announce.git"

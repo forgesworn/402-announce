@@ -56,6 +56,88 @@ console.log('From pubkey:', handle.pubkey)
 handle.close()
 ```
 
+## How it fits together
+
+```mermaid
+flowchart LR
+    subgraph "Your Server"
+        API[Your API]
+        TB[toll-booth<br/>L402 paywall]
+        AN[402-announce]
+    end
+
+    subgraph "Nostr Network"
+        R1[(Relay 1)]
+        R2[(Relay 2)]
+    end
+
+    subgraph "AI Agent"
+        MCP[402-mcp<br/>discovery + payment]
+    end
+
+    API --> TB
+    TB -->|"protects"| API
+    AN -->|"kind 31402"| R1
+    AN -->|"kind 31402"| R2
+    R1 -->|"subscribe"| MCP
+    R2 -->|"subscribe"| MCP
+    MCP -->|"HTTP + L402 token"| TB
+
+    style TB fill:#ef4444,color:#fff
+    style AN fill:#f59e0b,color:#000
+    style MCP fill:#3b82f6,color:#fff
+```
+
+1. **[toll-booth](https://github.com/TheCryptoDonkey/toll-booth)** wraps your API with an L402 paywall
+2. **402-announce** publishes a kind 31402 event describing the service, pricing, and payment methods
+3. **[402-mcp](https://github.com/TheCryptoDonkey/402-mcp)** discovers the announcement, pays the invoice, and calls your API
+
+## What it does
+
+- Builds and signs kind 31402 Nostr events
+- Publishes to one or more Nostr relays in parallel
+- Zeroises secret key bytes after use
+- Degrades gracefully when individual relays fail
+- Provides a `close()` handle for clean disconnection
+
+## What it does not do
+
+- Does not run an L402 paywall (use [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) for that)
+- Does not subscribe to or search for announcements (use [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) for that)
+- Does not handle payments or token verification
+
+## API
+
+### `announceService(config): Promise<Announcement>`
+
+High-level function that builds, signs, and publishes the event to multiple relays.
+
+**Returns** an `Announcement` handle:
+- `eventId` — the published Nostr event ID
+- `pubkey` — the Nostr pubkey derived from your secret key
+- `close()` — disconnect from all relays
+
+### `buildAnnounceEvent(secretKey, config): VerifiedEvent`
+
+Lower-level function that builds and signs the event without publishing. Useful if you manage relay connections yourself.
+
+### Config options
+
+| Field            | Type              | Required | Description                                    |
+|------------------|-------------------|----------|------------------------------------------------|
+| `secretKey`      | `string`          | yes      | 64-char hex Nostr secret key                   |
+| `relays`         | `string[]`        | yes      | Relay URLs (`wss://` or `ws://`)               |
+| `identifier`     | `string`          | yes      | Unique listing ID (Nostr `d` tag)              |
+| `name`           | `string`          | yes      | Human-readable service name                    |
+| `url`            | `string`          | yes      | HTTP endpoint for the service                  |
+| `about`          | `string`          | yes      | Short description                              |
+| `pricing`        | `PricingDef[]`    | yes      | Per-capability pricing                         |
+| `paymentMethods` | `string[]`        | yes      | Accepted payment methods                       |
+| `picture`        | `string`          | no       | Icon URL                                       |
+| `topics`         | `string[]`        | no       | Topic tags for filtering                       |
+| `capabilities`   | `CapabilityDef[]` | no       | Capability details (stored in event content)   |
+| `version`        | `string`          | no       | Service version (stored in event content)      |
+
 ## Announce flow
 
 ```mermaid
@@ -128,94 +210,12 @@ The event content is a JSON object with optional fields:
 }
 ```
 
-## API
-
-### `announceService(config): Promise<Announcement>`
-
-High-level function that builds, signs, and publishes the event to multiple relays.
-
-**Returns** an `Announcement` handle:
-- `eventId` — the published Nostr event ID
-- `pubkey` — the Nostr pubkey derived from your secret key
-- `close()` — disconnect from all relays
-
-### `buildAnnounceEvent(secretKey, config): VerifiedEvent`
-
-Lower-level function that builds and signs the event without publishing. Useful if you manage relay connections yourself.
-
-### Config options
-
-| Field            | Type              | Required | Description                                    |
-|------------------|-------------------|----------|------------------------------------------------|
-| `secretKey`      | `string`          | yes      | 64-char hex Nostr secret key                   |
-| `relays`         | `string[]`        | yes      | Relay URLs (`wss://` or `ws://`)               |
-| `identifier`     | `string`          | yes      | Unique listing ID (Nostr `d` tag)              |
-| `name`           | `string`          | yes      | Human-readable service name                    |
-| `url`            | `string`          | yes      | HTTP endpoint for the service                  |
-| `about`          | `string`          | yes      | Short description                              |
-| `pricing`        | `PricingDef[]`    | yes      | Per-capability pricing                         |
-| `paymentMethods` | `string[]`        | yes      | Accepted payment methods                       |
-| `picture`        | `string`          | no       | Icon URL                                       |
-| `topics`         | `string[]`        | no       | Topic tags for filtering                       |
-| `capabilities`   | `CapabilityDef[]` | no       | Capability details (stored in event content)   |
-| `version`        | `string`          | no       | Service version (stored in event content)      |
-
-## How it fits together
-
-```mermaid
-flowchart LR
-    subgraph "Your Server"
-        API[Your API]
-        TB[toll-booth<br/>L402 paywall]
-        AN[402-announce]
-    end
-
-    subgraph "Nostr Network"
-        R1[(Relay 1)]
-        R2[(Relay 2)]
-    end
-
-    subgraph "AI Agent"
-        MCP[402-mcp<br/>discovery + payment]
-    end
-
-    API --> TB
-    TB -->|"protects"| API
-    AN -->|"kind 31402"| R1
-    AN -->|"kind 31402"| R2
-    R1 -->|"subscribe"| MCP
-    R2 -->|"subscribe"| MCP
-    MCP -->|"HTTP + L402 token"| TB
-
-    style TB fill:#ef4444,color:#fff
-    style AN fill:#f59e0b,color:#000
-    style MCP fill:#3b82f6,color:#fff
-```
-
-1. **[toll-booth](https://github.com/TheCryptoDonkey/toll-booth)** wraps your API with an L402 paywall
-2. **402-announce** publishes a kind 31402 event describing the service, pricing, and payment methods
-3. **[402-mcp](https://github.com/TheCryptoDonkey/402-mcp)** discovers the announcement, pays the invoice, and calls your API
-
 ## Security
 
 - Secret key bytes are zeroised immediately after signing (in both `announceService` and `buildAnnounceEvent`)
 - Never log or persist the secret key — pass it in and let the library handle cleanup
 - Relay connections use a 10-second timeout to prevent hanging
 - Individual relay failures are logged as warnings but don't reject the promise
-
-## What it does
-
-- Builds and signs kind 31402 Nostr events
-- Publishes to one or more Nostr relays in parallel
-- Zeroises secret key bytes after use
-- Degrades gracefully when individual relays fail
-- Provides a `close()` handle for clean disconnection
-
-## What it does not do
-
-- Does not run an L402 paywall (use [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) for that)
-- Does not subscribe to or search for announcements (use [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) for that)
-- Does not handle payments or token verification
 
 ## Ecosystem
 
