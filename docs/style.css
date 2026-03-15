@@ -1,0 +1,519 @@
+/* ============================================================
+   Base & Reset
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
+  color: #111827;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 2rem 0;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #111827;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin: 0 0 1rem;
+  font-size: 1rem;
+}
+
+.stats {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+/* ============================================================
+   Relay Status Dots
+   ============================================================ */
+
+.relay-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.relay-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.relay-dot .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--dot-colour, #9ca3af);
+  flex-shrink: 0;
+}
+
+.relay-label {
+  /* Visible text label alongside colour dot for colour-blind safety */
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* ============================================================
+   Main Layout
+   ============================================================ */
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ============================================================
+   Filters
+   ============================================================ */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#search {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  color: #111827;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#search:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #6b7280;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+
+.pill:hover {
+  border-color: #9ca3af;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.pill.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.pill.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ============================================================
+   Services Grid
+   ============================================================ */
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ============================================================
+   Service Card
+   ============================================================ */
+
+.service-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: box-shadow 0.2s;
+}
+
+.service-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.service-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.service-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.service-name:hover {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.service-about {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+  /* Clamp to 3 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Pricing Table
+   ============================================================ */
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.pricing-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  padding: 0.3rem 0.5rem;
+}
+
+.pricing-table td {
+  padding: 0.3rem 0.5rem;
+  color: #4b5563;
+}
+
+.pricing-table tbody tr:nth-child(odd) {
+  background: #f9fafb;
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.badge.payment {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.topic {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* ============================================================
+   Card Footer
+   ============================================================ */
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  flex-wrap: wrap;
+}
+
+.pubkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.pubkey code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.copy-pubkey {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.copy-pubkey:hover {
+  color: #3b82f6;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Loading & Empty States
+   ============================================================ */
+
+.loading {
+  text-align: center;
+  color: #9ca3af;
+  padding: 4rem 1rem;
+  font-size: 1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading.error {
+  animation: none;
+  color: #ef4444;
+}
+
+.empty-state {
+  text-align: center;
+  color: #9ca3af;
+  padding: 4rem 1rem;
+  font-size: 1rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================================
+   Announce CTA Section
+   ============================================================ */
+
+.announce-cta {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  padding: 3rem 2rem;
+  text-align: center;
+  margin-top: 3rem;
+  border-radius: 12px;
+}
+
+.announce-cta h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #111827;
+}
+
+.announce-cta > p {
+  color: #6b7280;
+  margin: 0 0 1.5rem;
+}
+
+.announce-cta pre {
+  margin: 0 auto 1.5rem;
+  max-width: 640px;
+  text-align: left;
+}
+
+.announce-cta code {
+  display: block;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  white-space: pre;
+}
+
+.cta-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.cta-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #374151;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cta-links a:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+footer {
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2rem;
+}
+
+footer a {
+  color: #9ca3af;
+}
+
+footer a:hover {
+  color: #3b82f6;
+}
+
+/* ============================================================
+   Responsive — Mobile (≤ 640px)
+   ============================================================ */
+
+@media (max-width: 640px) {
+  header {
+    padding: 1.25rem 0;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    gap: 0.6rem;
+  }
+
+  .filter-pills {
+    flex-direction: row; /* wrap naturally on mobile */
+  }
+
+  .announce-cta {
+    padding: 2rem 1rem;
+  }
+
+  .cta-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

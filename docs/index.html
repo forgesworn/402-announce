@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover Paid APIs — Live Kind 31402 Services on Nostr</title>
+  <meta name="description" content="Live dashboard of paid API services announcing on the Nostr network. Find Lightning-paid APIs without a centralised registry.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Discover Paid APIs</h1>
+      <p class="subtitle">Live services announcing on the Nostr network via <a href="https://github.com/TheCryptoDonkey/402-announce">kind 31402</a></p>
+      <div class="stats">
+        <span id="service-count">0 services</span> found across <span id="relay-count">0 relays</span>
+      </div>
+      <div id="relay-status" class="relay-status" role="status" aria-label="Relay connection status"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="filters" aria-label="Filter services">
+      <label for="search" class="sr-only">Search services</label>
+      <input type="search" id="search" placeholder="Search services..." autocomplete="off" aria-label="Search services">
+      <div id="payment-filters" class="filter-pills" role="group" aria-label="Filter by payment method"></div>
+      <div id="topic-filters" class="filter-pills" role="group" aria-label="Filter by topic"></div>
+    </section>
+
+    <div id="loading" class="loading" role="status" aria-live="polite">Connecting to relays...</div>
+
+    <section id="services-grid" class="services-grid" aria-label="Discovered services" aria-live="polite"></section>
+
+    <section id="empty-state" class="empty-state" hidden aria-live="polite">
+      <p>No services match your filters.</p>
+    </section>
+
+    <section class="announce-cta">
+      <h2>Announce Your Own API</h2>
+      <p>Get your API listed here. Announce it on Nostr in 10 lines of code.</p>
+      <pre><code>import { announceService } from '402-announce'
+
+await announceService({
+  secretKey: process.env.NOSTR_SK,
+  relays: ['wss://relay.damus.io'],
+  identifier: 'my-api',
+  name: 'My Paid API',
+  url: 'https://api.example.com',
+  about: 'Pay-per-request API with Lightning',
+  pricing: [{ capability: 'query', price: 10, currency: 'sats' }],
+  paymentMethods: ['bitcoin-lightning-bolt11'],
+})</code></pre>
+      <div class="cta-links">
+        <a href="https://www.npmjs.com/package/402-announce">402-announce on npm</a>
+        <a href="https://www.npmjs.com/package/toll-booth-announce">toll-booth-announce bridge</a>
+        <a href="https://github.com/TheCryptoDonkey/402-announce">GitHub</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by <a href="https://github.com/TheCryptoDonkey/402-announce">402-announce</a> — decentralised paid API discovery on Nostr</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
