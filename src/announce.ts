@@ -61,6 +61,20 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
     }
   }
 
+  // Reject private/loopback service URLs — announcing a localhost URL is never useful
+  // to remote clients. (Note: event.ts intentionally allows them for pure serialisation.)
+  try {
+    const serviceUrl = new URL(config.url)
+    if (isPrivateHost(serviceUrl.hostname)) {
+      throw new Error(
+        `Service URL points to a private/loopback address: ${config.url} — use a public URL or set --public-url`,
+      )
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('private/loopback')) throw e
+    throw new Error(`Invalid service URL: ${config.url}`)
+  }
+
   // Build and sign the event (H2: no redundant key decode — pubkey comes from the event)
   const event = buildAnnounceEvent(secretKey, config)
 

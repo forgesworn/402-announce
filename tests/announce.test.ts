@@ -388,6 +388,28 @@ describe('announceService', () => {
     })
   })
 
+  describe('SSRF prevention — private/loopback service URLs', () => {
+    const privateServiceUrls = [
+      'http://localhost:3000/api',
+      'http://127.0.0.1:3000/api',
+      'http://10.0.0.1/api',
+      'http://192.168.1.1/api',
+      'http://[::1]/api',
+    ]
+
+    for (const url of privateServiceUrls) {
+      it(`rejects service URL ${url}`, async () => {
+        const config = makeConfig({ url })
+        await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
+      })
+    }
+
+    it('accepts public service URL', async () => {
+      const config = makeConfig({ url: 'https://satgate.trotters.dev' })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+  })
+
   describe('ws:// insecure relay warning (M4)', () => {
     let warnSpy: ReturnType<typeof vi.spyOn>
 
