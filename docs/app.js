@@ -213,6 +213,7 @@ function handleEvent(event) {
     capabilities,
     version,
     createdAt: event.created_at,
+    source: 'nostr',
   })
 
   renderServices()
@@ -334,8 +335,14 @@ function renderServices() {
   filtered.sort((a, b) => b.createdAt - a.createdAt)
 
   // Update service count in header
+  const nostrCount = allServices.filter(s => s.source === 'nostr').length
+  const indexedCount = allServices.length - nostrCount
+  const parts = []
+  if (nostrCount > 0) parts.push(nostrCount + ' self-announced')
+  if (indexedCount > 0) parts.push(indexedCount + ' indexed')
   document.getElementById('service-count').textContent =
-    allServices.length + ' service' + (allServices.length !== 1 ? 's' : '')
+    allServices.length + ' service' + (allServices.length !== 1 ? 's' : '') +
+    (parts.length > 0 ? ' (' + parts.join(', ') + ')' : '')
 
   // Show empty state if filters produced no results but services exist
   if (filtered.length === 0 && allServices.length > 0) {
@@ -382,6 +389,12 @@ function buildCard(s) {
   // --- Header ---
   const header = document.createElement('div')
   header.className = 'card-header'
+
+  // Source badge
+  const sourceBadge = document.createElement('span')
+  sourceBadge.className = 'badge source source-' + (s.source === 'nostr' ? 'nostr' : 'indexed')
+  sourceBadge.textContent = s.source === 'nostr' ? 'Self-announced' : 'Indexed via ' + s.source
+  header.appendChild(sourceBadge)
 
   if (s.picture) {
     const img = document.createElement('img')
@@ -587,6 +600,147 @@ function getTimeAgo(timestamp) {
 }
 
 /* ============================================================
+   External Directory Sources
+   ============================================================ */
+
+/**
+ * Fetches services from external L402 directories and merges them
+ * into the service store. Each indexed service is marked with its
+ * source so cards can display provenance badges.
+ *
+ * Nostr self-announced services always take precedence — if a service
+ * exists in both Nostr and an external directory (matched by URL),
+ * the Nostr version wins.
+ */
+
+const EXTERNAL_SOURCES = [
+  {
+    name: 'satring.com',
+    url: 'https://satring.com/api/v1/services/bulk',
+    parse: parseSatringServices,
+  },
+  {
+    name: 'l402.directory',
+    url: 'https://l402.directory/api/services',
+    parse: parseL402DirectoryServices,
+  },
+]
+
+/**
+ * Fetches all external sources in parallel. Failures are logged
+ * but do not affect other sources or the Nostr subscription.
+ */
+async function fetchExternalSources() {
+  await Promise.allSettled(
+    EXTERNAL_SOURCES.map(async (src) => {
+      try {
+        const res = await fetch(src.url)
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+        const data = await res.json()
+        const parsed = src.parse(data, src.name)
+        let added = 0
+        parsed.forEach(svc => {
+          // Only add if no Nostr self-announced version exists for this URL
+          const existingByUrl = [...services.values()].find(
+            s => s.url === svc.url && s.source === 'nostr'
+          )
+          if (existingByUrl) return
+
+          const key = 'ext:' + src.name + ':' + svc.identifier
+          services.set(key, svc)
+          added++
+        })
+        console.log(`[${src.name}] Indexed ${added} services (${parsed.length} total, ${parsed.length - added} skipped — already on Nostr)`)
+      } catch (err) {
+        console.warn(`[${src.name}] Fetch failed:`, err.message || err)
+      }
+    })
+  )
+  renderServices()
+}
+
+/**
+ * Parses the satring.com bulk API response into service objects.
+ * Response is an array of service objects with name, url, description,
+ * category_ids, protocol, status, pricing, etc.
+ *
+ * @param {Array} data - Raw API response array
+ * @param {string} sourceName - Source identifier for provenance
+ * @returns {Array} Parsed service objects
+ */
+function parseSatringServices(data, sourceName) {
+  const items = Array.isArray(data) ? data : []
+  return items
+    .filter(s => s.name && s.url && s.status !== 'dead')
+    .map(s => ({
+      id: 'satring-' + (s.slug || s.name),
+      pubkey: '',
+      identifier: s.slug || s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      name: s.name,
+      url: s.url,
+      about: s.description || '',
+      picture: s.logo_url || undefined,
+      pricing: (s.endpoints || [])
+        .filter(e => e.pricing)
+        .map(e => ({
+          capability: e.method + ' ' + (e.url || '').split('?')[0],
+          price: e.pricing?.amount || 0,
+          currency: e.pricing?.currency || 'sats',
+        }))
+        .slice(0, 5),
+      paymentMethods: s.protocol === 'X402'
+        ? ['x402-stablecoin']
+        : ['bitcoin-lightning-bolt11'],
+      topics: (s.category_ids || []).map(String),
+      capabilities: undefined,
+      version: undefined,
+      createdAt: s.listed_at ? Math.floor(new Date(s.listed_at).getTime() / 1000) : 0,
+      source: sourceName,
+    }))
+}
+
+/**
+ * Parses the l402.directory API response into service objects.
+ * Response is { services: [...], count: N }.
+ *
+ * @param {object} data - Raw API response
+ * @param {string} sourceName - Source identifier for provenance
+ * @returns {Array} Parsed service objects
+ */
+function parseL402DirectoryServices(data, sourceName) {
+  const items = data?.services || []
+  return items
+    .filter(s => s.name)
+    .map(s => {
+      const endpoints = s.endpoints || []
+      const firstUrl = endpoints[0]?.url || s.provider?.url || ''
+      return {
+        id: 'l402dir-' + (s.service_id || s.name),
+        pubkey: s.destination_pubkey || '',
+        identifier: (s.service_id || s.name).toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        name: s.name,
+        url: firstUrl,
+        about: s.description || '',
+        picture: undefined,
+        pricing: endpoints
+          .filter(e => e.pricing && e.pricing.amount > 0)
+          .map(e => ({
+            capability: (e.method || 'GET') + ' ' + (e.url || '').split('?')[0],
+            price: e.pricing.amount,
+            currency: e.pricing.currency || 'sats',
+          }))
+          .slice(0, 5),
+        paymentMethods: ['bitcoin-lightning-bolt11'],
+        topics: s.categories || [],
+        capabilities: undefined,
+        version: undefined,
+        createdAt: s.listed_at ? Math.floor(new Date(s.listed_at).getTime() / 1000) : 0,
+        source: sourceName,
+      }
+    })
+}
+
+/* ============================================================
    Event Listeners
    ============================================================ */
 
@@ -641,3 +795,4 @@ setInterval(checkAllDown, 5000)
    ============================================================ */
 
 connectAll()
+fetchExternalSources()

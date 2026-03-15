@@ -301,6 +301,21 @@ main {
   color: #1d4ed8;
 }
 
+.badge.source {
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.badge.source-nostr {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.source-indexed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .badge.topic {
   background: #f3f4f6;
   color: #374151;
