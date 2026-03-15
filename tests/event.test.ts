@@ -216,6 +216,14 @@ describe('buildAnnounceEvent', () => {
     it('accepts about exactly 4096 characters', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'a'.repeat(4096) }))).not.toThrow()
     })
+
+    it('rejects empty about', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: '' }))).toThrow('must not be empty')
+    })
+
+    it('rejects whitespace-only about', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: '   ' }))).toThrow('must not be empty')
+    })
   })
 
   describe('topics validation', () => {
@@ -547,6 +555,48 @@ describe('buildAnnounceEvent', () => {
     it('rejects capability description longer than 4096 characters', () => {
       const capabilities = [{ name: 'x', description: 'a'.repeat(4097) }]
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('description must not exceed 4096')
+    })
+  })
+
+  describe('circular reference in schema', () => {
+    it('rejects schema with circular reference', () => {
+      const circular: Record<string, unknown> = { name: 'test' }
+      circular.self = circular
+      const capabilities = [{ name: 'x', description: 'desc', schema: circular }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('circular reference')
+    })
+
+    it('zeroes key bytes even when schema has circular reference', () => {
+      let captured: Uint8Array | undefined
+      const orig = utils.hexToBytes
+      vi.spyOn(utils, 'hexToBytes').mockImplementation((hex: string) => {
+        captured = orig(hex)
+        return captured
+      })
+      const circular: Record<string, unknown> = { name: 'test' }
+      circular.self = circular
+      const capabilities = [{ name: 'x', description: 'desc', schema: circular }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('circular reference')
+      vi.restoreAllMocks()
+      expect(captured).toBeDefined()
+      expect(captured!.every(b => b === 0)).toBe(true)
+    })
+  })
+
+  describe('dangerous scheme in capability endpoint', () => {
+    it('rejects javascript: endpoint', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: 'javascript:alert(1)' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must start with /')
+    })
+
+    it('rejects data: endpoint', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: 'data:text/html,<h1>hi</h1>' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must start with /')
+    })
+
+    it('rejects file: endpoint', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: 'file:///etc/passwd' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must start with /')
     })
   })
 

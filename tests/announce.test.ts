@@ -420,5 +420,15 @@ describe('announceService', () => {
       )
       expect(wsWarning).toBeUndefined()
     })
+
+    it('emits a warning for uppercase WS:// relay URLs', async () => {
+      const config = makeConfig({ relays: ['WS://relay.example.com'] })
+      await announceService(config)
+
+      const wsWarning = warnSpy.mock.calls.find(
+        (call) => typeof call[0] === 'string' && call[0].includes('Insecure WebSocket'),
+      )
+      expect(wsWarning).toBeDefined()
+    })
   })
 })

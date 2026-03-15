@@ -58,6 +58,9 @@ export function buildAnnounceEvent(
   if (config.name.length > 256) {
     throw new Error('config.name must not exceed 256 characters')
   }
+  if (config.about.trim().length === 0) {
+    throw new Error('config.about must not be empty or whitespace-only')
+  }
   if (config.about.length > 4096) {
     throw new Error('config.about must not exceed 4096 characters')
   }
@@ -179,7 +182,12 @@ export function buildAnnounceEvent(
       contentObj.version = config.version
     }
 
-    const content = JSON.stringify(contentObj)
+    let content: string
+    try {
+      content = JSON.stringify(contentObj)
+    } catch {
+      throw new Error('Event content could not be serialised (circular reference or invalid schema)')
+    }
     if (Buffer.byteLength(content, 'utf8') > 65_536) {
       throw new Error('Event content exceeds maximum size (64 KiB)')
     }

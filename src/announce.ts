@@ -54,7 +54,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
     }
 
     // M4: Warn on insecure ws:// usage
-    if (url.startsWith('ws://')) {
+    if (/^ws:\/\//i.test(url)) {
       console.warn(
         `[402-announce] Insecure WebSocket (ws://) relay: ${url} — use wss:// in production`,
       )
