@@ -43,7 +43,7 @@ const handle = await announceService({
   pricing: [
     { capability: 'get_joke', price: 1, currency: 'sats' },
   ],
-  paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu'],
+  paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu', 'bitcoin-cashu-xcashu'],
   topics: ['comedy', 'ai'],
   capabilities: [
     { name: 'get_joke', description: 'Returns a random joke' },
@@ -200,6 +200,15 @@ graph TB
 | `price`   | yes      | Capability pricing (repeatable)              | `get_joke`, `1`, `sats`           |
 | `t`       | no       | Topic tag for search/filtering (repeatable)  | `comedy`                          |
 | `picture` | no       | Icon URL                                     | `https://example.com/icon.png`    |
+
+### Recognised Payment Method Identifiers
+
+| Identifier | Description |
+|------------|-------------|
+| `bitcoin-lightning-bolt11` | Lightning Network (BOLT-11 invoices) |
+| `bitcoin-cashu` | Cashu ecash (generic) |
+| `bitcoin-cashu-xcashu` | Cashu ecash via NUT-24 (X-Cashu header) |
+| `x402-evm` | x402 stablecoin payments (EVM chains) |
 
 ### Content
 
