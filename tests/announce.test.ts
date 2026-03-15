@@ -136,6 +136,12 @@ describe('announceService', () => {
       const config = makeConfig({ relays: ['wss://relay.example.com'] })
       await expect(announceService(config)).resolves.toBeDefined()
     })
+
+    it('deduplicates relay URLs', async () => {
+      const config = makeConfig({ relays: ['wss://relay.example.com', 'wss://relay.example.com'] })
+      await announceService(config)
+      expect(Relay.connect).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('relay URL userinfo rejection', () => {
@@ -147,6 +153,19 @@ describe('announceService', () => {
     it('rejects relay URL with username and password', async () => {
       const config = makeConfig({ relays: ['wss://user:pass@relay.example.com'] })
       await expect(announceService(config)).rejects.toThrow(/credentials/)
+    })
+
+    it('does not leak credentials in error message', async () => {
+      const config = makeConfig({ relays: ['wss://user:secret@relay.example.com'] })
+      try {
+        await announceService(config)
+        expect.unreachable('should have thrown')
+      } catch (e) {
+        const msg = (e as Error).message
+        expect(msg).not.toContain('secret')
+        expect(msg).not.toContain('user:')
+        expect(msg).toContain('credentials')
+      }
     })
   })
 
@@ -319,6 +338,21 @@ describe('announceService', () => {
       it('does not flag 198.17 or 198.20 as private', () => {
         expect(isPrivateHost('198.17.0.1')).toBe(false)
         expect(isPrivateHost('198.20.0.1')).toBe(false)
+      })
+
+      it('rejects IANA special-purpose ranges', () => {
+        expect(isPrivateHost('192.0.0.1')).toBe(true)       // 192.0.0.0/24
+        expect(isPrivateHost('192.0.2.1')).toBe(true)       // TEST-NET-1
+        expect(isPrivateHost('198.51.100.1')).toBe(true)    // TEST-NET-2
+        expect(isPrivateHost('203.0.113.1')).toBe(true)     // TEST-NET-3
+        expect(isPrivateHost('192.88.99.1')).toBe(true)     // 6to4 relay anycast
+      })
+
+      it('does not flag adjacent ranges as special-purpose', () => {
+        expect(isPrivateHost('192.0.3.1')).toBe(false)
+        expect(isPrivateHost('198.51.101.1')).toBe(false)
+        expect(isPrivateHost('203.0.114.1')).toBe(false)
+        expect(isPrivateHost('192.88.100.1')).toBe(false)
       })
 
       it('rejects 6to4 addresses embedding private IPv4 (2002::/16)', () => {

@@ -15,7 +15,8 @@ import type { AnnounceConfig, Announcement } from './types.js'
  * @throws If the relay list is empty or contains invalid URLs.
  */
 export async function announceService(config: AnnounceConfig): Promise<Announcement> {
-  const { relays, secretKey } = config
+  const { relays: rawRelays, secretKey } = config
+  const relays = [...new Set(rawRelays)]
 
   if (!/^[0-9a-f]{64}$/i.test(secretKey)) {
     throw new Error('secretKey must be a 64-character hex string')
@@ -41,7 +42,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
       throw new Error(`Invalid relay URL: ${url}`)
     }
     if (parsed.username || parsed.password) {
-      throw new Error(`Relay URL must not contain credentials: ${url}`)
+      throw new Error(`Relay URL must not contain credentials: ${parsed.origin}${parsed.pathname}`)
     }
     if (isPrivateHost(parsed.hostname)) {
       throw new Error(`Relay URL points to a private/loopback address: ${url}`)

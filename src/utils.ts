@@ -174,5 +174,10 @@ function isPrivateIPv4(ip: string): boolean {
   if (a === 100 && b >= 64 && b <= 127) return true            // 100.64.0.0/10 (CGNAT / shared address space, RFC 6598)
   if (a >= 240) return true                                     // 240.0.0.0/4 (reserved) + 255.255.255.255 (broadcast)
   if (a === 198 && (b === 18 || b === 19)) return true         // 198.18.0.0/15 (benchmarking, RFC 2544)
+  if (a === 192 && b === 0 && parts[2] === 0) return true     // 192.0.0.0/24 (IANA special-purpose, RFC 6890)
+  if (a === 192 && b === 0 && parts[2] === 2) return true     // 192.0.2.0/24 (TEST-NET-1, RFC 5737)
+  if (a === 198 && b === 51 && parts[2] === 100) return true  // 198.51.100.0/24 (TEST-NET-2, RFC 5737)
+  if (a === 203 && b === 0 && parts[2] === 113) return true   // 203.0.113.0/24 (TEST-NET-3, RFC 5737)
+  if (a === 192 && b === 88 && parts[2] === 99) return true   // 192.88.99.0/24 (6to4 relay anycast, RFC 7526)
   return false
 }

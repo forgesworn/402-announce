@@ -44,6 +44,9 @@ export function buildAnnounceEvent(
   }
 
   // Tag field length limits
+  if (config.name.trim().length === 0) {
+    throw new Error('config.name must not be empty or whitespace-only')
+  }
   if (config.name.length > 256) {
     throw new Error('config.name must not exceed 256 characters')
   }
@@ -61,10 +64,41 @@ export function buildAnnounceEvent(
     }
   }
 
+  // Validate paymentMethods
+  if (config.paymentMethods.length === 0) {
+    throw new Error('config.paymentMethods must contain at least one entry')
+  }
+  if (config.paymentMethods.length > 20) {
+    throw new Error('config.paymentMethods must not exceed 20 entries')
+  }
+  for (const pm of config.paymentMethods) {
+    if (pm.trim().length === 0) {
+      throw new Error('config.paymentMethods entries must not be empty or whitespace-only')
+    }
+    if (pm.length > 64) {
+      throw new Error(`config.paymentMethods entry must not exceed 64 characters, got: "${pm.slice(0, 20)}..."`)
+    }
+  }
+
   // M3: Validate all pricing entries
+  if (config.pricing.length === 0) {
+    throw new Error('config.pricing must contain at least one entry')
+  }
   for (const p of config.pricing) {
     if (!Number.isFinite(p.price) || p.price < 0) {
       throw new Error(`config.pricing price must be a finite non-negative number, got: ${p.price}`)
+    }
+    if (p.capability.trim().length === 0) {
+      throw new Error('config.pricing capability must not be empty or whitespace-only')
+    }
+    if (p.capability.length > 64) {
+      throw new Error(`config.pricing capability must not exceed 64 characters`)
+    }
+    if (p.currency.trim().length === 0) {
+      throw new Error('config.pricing currency must not be empty or whitespace-only')
+    }
+    if (p.currency.length > 32) {
+      throw new Error(`config.pricing currency must not exceed 32 characters`)
     }
   }
 
@@ -100,6 +134,9 @@ export function buildAnnounceEvent(
       contentObj.capabilities = config.capabilities
     }
     if (config.version) {
+      if (config.version.length > 64) {
+        throw new Error('config.version must not exceed 64 characters')
+      }
       contentObj.version = config.version
     }
 

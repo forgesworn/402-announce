@@ -278,6 +278,83 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
+  describe('paymentMethods validation', () => {
+    it('rejects empty paymentMethods array', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [] }))).toThrow('at least one entry')
+    })
+
+    it('rejects more than 20 paymentMethods', () => {
+      const paymentMethods = Array.from({ length: 21 }, (_, i) => `method-${i}`)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods }))).toThrow('must not exceed 20')
+    })
+
+    it('rejects empty string paymentMethod', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [''] }))).toThrow('must not be empty')
+    })
+
+    it('rejects whitespace-only paymentMethod', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['  '] }))).toThrow('must not be empty')
+    })
+
+    it('rejects paymentMethod longer than 64 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['a'.repeat(65)] }))).toThrow('must not exceed 64')
+    })
+
+    it('accepts valid paymentMethods', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu'] }))).not.toThrow()
+    })
+  })
+
+  describe('pricing capability and currency validation', () => {
+    it('rejects empty capability', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: '', price: 1, currency: 'sats' }] }))).toThrow('capability must not be empty')
+    })
+
+    it('rejects whitespace-only capability', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: '  ', price: 1, currency: 'sats' }] }))).toThrow('capability must not be empty')
+    })
+
+    it('rejects capability longer than 64 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'a'.repeat(65), price: 1, currency: 'sats' }] }))).toThrow('capability must not exceed 64')
+    })
+
+    it('rejects empty currency', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: 1, currency: '' }] }))).toThrow('currency must not be empty')
+    })
+
+    it('rejects whitespace-only currency', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: 1, currency: '  ' }] }))).toThrow('currency must not be empty')
+    })
+
+    it('rejects currency longer than 32 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [{ capability: 'x', price: 1, currency: 'a'.repeat(33) }] }))).toThrow('currency must not exceed 32')
+    })
+
+    it('rejects empty pricing array', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [] }))).toThrow('at least one entry')
+    })
+  })
+
+  describe('name validation', () => {
+    it('rejects empty name', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: '' }))).toThrow('must not be empty')
+    })
+
+    it('rejects whitespace-only name', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: '   ' }))).toThrow('must not be empty')
+    })
+  })
+
+  describe('version validation', () => {
+    it('rejects version longer than 64 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ version: 'a'.repeat(65) }))).toThrow('must not exceed 64')
+    })
+
+    it('accepts version exactly 64 characters', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ version: 'a'.repeat(64) }))).not.toThrow()
+    })
+  })
+
   describe('capability schemas', () => {
     it('includes schema and outputSchema in content when provided', () => {
       const inputSchema = { type: 'object', properties: { count: { type: 'number' } } }
