@@ -474,18 +474,13 @@ describe('buildAnnounceEvent', () => {
   })
 
   describe('price precision', () => {
-    it('rejects non-integer price (e.g. 1.5)', () => {
-      const pricing = [{ capability: 'x', price: 1.5, currency: 'sats' }]
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).toThrow('must be an integer')
+    it('accepts fractional price (e.g. 0.99 USD)', () => {
+      const pricing = [{ capability: 'x', price: 0.99, currency: 'usd' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).not.toThrow()
     })
 
     it('accepts price above MAX_SAFE_INTEGER (e.g. 1e18 wei)', () => {
       const pricing = [{ capability: 'x', price: 1e18, currency: 'wei' }]
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).not.toThrow()
-    })
-
-    it('accepts price at MAX_SAFE_INTEGER', () => {
-      const pricing = [{ capability: 'x', price: Number.MAX_SAFE_INTEGER, currency: 'sats' }]
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).not.toThrow()
     })
   })
