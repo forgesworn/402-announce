@@ -56,6 +56,8 @@ console.log('From pubkey:', handle.pubkey)
 handle.close()
 ```
 
+See [`examples/`](./examples) for runnable scripts.
+
 ## How it fits together
 
 ```mermaid

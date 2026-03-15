@@ -48,6 +48,8 @@ PricingDef:
 CapabilityDef:
   - name (string): Capability name
   - description (string): Human-readable description
+  - schema (unknown, optional): JSON Schema describing the capability's input parameters
+  - outputSchema (unknown, optional): JSON Schema describing the capability's output
 
 **Returns** Announcement:
   - eventId (string): The published Nostr event ID
