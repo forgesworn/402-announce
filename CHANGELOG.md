@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.5...v1.2.0) (2026-03-15)
+
+
+### Features
+
+* add optional endpoint field to capability definitions ([294af78](https://github.com/TheCryptoDonkey/402-announce/commit/294af78f081c2a47b471eb8b805f25d6b458dacb))
+
 ## [1.1.5](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.4...v1.1.5) (2026-03-15)
 
 
