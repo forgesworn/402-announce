@@ -1,3 +1,12 @@
+## [1.1.3](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.2...v1.1.3) (2026-03-15)
+
+
+### Bug Fixes
+
+* harden SSRF prevention and add input validation limits ([da5a3f5](https://github.com/TheCryptoDonkey/402-announce/commit/da5a3f523a252e5c32d349e23bcc56d96c830c48))
+* normalise compressed IPv6 before 6to4/Teredo prefix checks ([043e6be](https://github.com/TheCryptoDonkey/402-announce/commit/043e6be353acd7dff62d3154f72c78e8a1b8816f))
+* remove private host check from buildAnnounceEvent ([e4b36c1](https://github.com/TheCryptoDonkey/402-announce/commit/e4b36c1cb0a7c996d20fdf992118dd5a4f64b730))
+
 ## [1.1.2](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.1...v1.1.2) (2026-03-14)
 
 
