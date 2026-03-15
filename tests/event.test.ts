@@ -333,6 +333,11 @@ describe('buildAnnounceEvent', () => {
     it('rejects empty pricing array', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: [] }))).toThrow('at least one entry')
     })
+
+    it('rejects more than 100 pricing entries', () => {
+      const pricing = Array.from({ length: 101 }, (_, i) => ({ capability: `cap-${i}`, price: 1, currency: 'sats' }))
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).toThrow('must not exceed 100')
+    })
   })
 
   describe('name validation', () => {

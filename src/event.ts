@@ -80,9 +80,17 @@ export function buildAnnounceEvent(
     }
   }
 
+  // Validate version early (before content construction)
+  if (config.version && config.version.length > 64) {
+    throw new Error('config.version must not exceed 64 characters')
+  }
+
   // M3: Validate all pricing entries
   if (config.pricing.length === 0) {
     throw new Error('config.pricing must contain at least one entry')
+  }
+  if (config.pricing.length > 100) {
+    throw new Error('config.pricing must not exceed 100 entries')
   }
   for (const p of config.pricing) {
     if (!Number.isFinite(p.price) || p.price < 0) {
@@ -134,9 +142,6 @@ export function buildAnnounceEvent(
       contentObj.capabilities = config.capabilities
     }
     if (config.version) {
-      if (config.version.length > 64) {
-        throw new Error('config.version must not exceed 64 characters')
-      }
       contentObj.version = config.version
     }
 
