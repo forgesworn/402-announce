@@ -104,8 +104,8 @@ export function buildAnnounceEvent(
     if (!Number.isFinite(p.price) || p.price < 0) {
       throw new Error(`config.pricing price must be a finite non-negative number, got: ${p.price}`)
     }
-    if (p.price > Number.MAX_SAFE_INTEGER) {
-      throw new Error(`config.pricing price exceeds MAX_SAFE_INTEGER (${Number.MAX_SAFE_INTEGER})`)
+    if (!Number.isSafeInteger(p.price) && p.price !== Math.floor(p.price)) {
+      throw new Error(`config.pricing price must be an integer, got: ${p.price}`)
     }
     if (p.capability.trim().length === 0) {
       throw new Error('config.pricing capability must not be empty or whitespace-only')
