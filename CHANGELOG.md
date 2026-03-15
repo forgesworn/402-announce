@@ -1,3 +1,12 @@
+## [1.1.5](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.4...v1.1.5) (2026-03-15)
+
+
+### Bug Fixes
+
+* harden input validation and add key zeroing tests ([5f6e850](https://github.com/TheCryptoDonkey/402-announce/commit/5f6e850f44e31c37045bb5b2ff21e1e210949448))
+* remove integer-only price guard to allow fractional and large values ([d954140](https://github.com/TheCryptoDonkey/402-announce/commit/d954140802efa763dc2a728f92ece8bf8e4eee98))
+* replace MAX_SAFE_INTEGER guard with integer check for x402-evm compat ([64a576a](https://github.com/TheCryptoDonkey/402-announce/commit/64a576aa84abd2c43a4905bc000904262df0efe4))
+
 ## [1.1.4](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.3...v1.1.4) (2026-03-15)
 
 
