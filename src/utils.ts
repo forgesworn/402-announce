@@ -55,17 +55,22 @@ export function isPrivateHost(hostname: string): boolean {
   // IPv6 unique-local fc00::/7 (fc00:: through fdff::)
   if (/^f[cd][0-9a-f]{2}:/i.test(stripped)) return true
 
-  // 6to4 (2002::/16) — embeds IPv4 in bits 16–47: 2002:AABB:CCDD::
-  const sixToFour = stripped.match(/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i)
-  if (sixToFour) {
-    const hi = parseInt(sixToFour[1], 16)
-    const lo = parseInt(sixToFour[2], 16)
-    const ip = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
-    return isPrivateIPv4(ip)
-  }
+  // Expand :: compression so prefix checks work on all forms
+  const expanded = expandIPv6(stripped)
 
-  // Teredo (2001:0000::/32) — block the entire prefix rather than decode
-  if (/^2001:0{0,3}0:/i.test(stripped)) return true
+  if (expanded) {
+    // 6to4 (2002::/16) — embeds IPv4 in bits 16–47: 2002:AABB:CCDD::
+    const sixToFour = expanded.match(/^2002:([0-9a-f]{4}):([0-9a-f]{4}):/i)
+    if (sixToFour) {
+      const hi = parseInt(sixToFour[1], 16)
+      const lo = parseInt(sixToFour[2], 16)
+      const ip = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
+      return isPrivateIPv4(ip)
+    }
+
+    // Teredo (2001:0000::/32) — block the entire prefix rather than decode
+    if (expanded.startsWith('2001:0000:')) return true
+  }
 
   // IPv4-mapped IPv6 — ::ffff:x.x.x.x or ::ffff:HHHH:HHHH
   const v4mapped = stripped.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i)
@@ -126,6 +131,33 @@ export function isPrivateHost(hostname: string): boolean {
   }
 
   return false
+}
+
+/**
+ * Expand a compressed IPv6 address to its full 8-group form.
+ * Returns null if the input is not a valid IPv6 address.
+ */
+function expandIPv6(addr: string): string | null {
+  // Reject if it contains a dotted-quad suffix (IPv4-mapped/compatible handled separately)
+  if (/\d+\.\d+\.\d+\.\d+/.test(addr)) return null
+
+  const halves = addr.split('::')
+  if (halves.length > 2) return null
+
+  let groups: string[]
+  if (halves.length === 2) {
+    const left = halves[0] ? halves[0].split(':') : []
+    const right = halves[1] ? halves[1].split(':') : []
+    const missing = 8 - left.length - right.length
+    if (missing < 0) return null
+    groups = [...left, ...Array(missing).fill('0'), ...right]
+  } else {
+    groups = addr.split(':')
+  }
+
+  if (groups.length !== 8) return null
+  if (!groups.every(g => /^[0-9a-f]{1,4}$/i.test(g))) return null
+  return groups.map(g => g.padStart(4, '0')).join(':')
 }
 
 /** Check a strict decimal dotted-quad IPv4 against private ranges. */

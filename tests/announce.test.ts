@@ -327,6 +327,11 @@ describe('announceService', () => {
         expect(isPrivateHost('2002:c0a8:0101::1')).toBe(true)   // 192.168.1.1
       })
 
+      it('rejects compressed 6to4 with zero hextet (2002:7f00::1)', () => {
+        expect(isPrivateHost('2002:7f00::1')).toBe(true)        // 127.0.0.0 embedded
+        expect(isPrivateHost('2002:0a00::1')).toBe(true)        // 10.0.0.0 embedded
+      })
+
       it('allows 6to4 addresses embedding public IPv4', () => {
         expect(isPrivateHost('2002:0808:0808::1')).toBe(false)  // 8.8.8.8
       })
@@ -334,6 +339,11 @@ describe('announceService', () => {
       it('rejects Teredo addresses (2001:0000::/32)', () => {
         expect(isPrivateHost('2001:0000:abcd::1')).toBe(true)
         expect(isPrivateHost('2001:0:abcd::1')).toBe(true)
+      })
+
+      it('rejects compressed Teredo addresses (2001::1)', () => {
+        expect(isPrivateHost('2001::1')).toBe(true)
+        expect(isPrivateHost('2001::abcd')).toBe(true)
       })
 
       it('rejects IPv6 with zone ID suffix', () => {
