@@ -24,14 +24,22 @@ export function buildAnnounceEvent(
 
   // M1: Validate url field (scheme only — this function serialises the URL
   // into event tags without performing network I/O, so private hosts are allowed)
-  if (!config.url.startsWith('http://') && !config.url.startsWith('https://')) {
+  const urlLower = config.url.toLowerCase()
+  if (!urlLower.startsWith('http://') && !urlLower.startsWith('https://')) {
     throw new Error('config.url must start with http:// or https://')
+  }
+  if (config.url.length > 2048) {
+    throw new Error('config.url must not exceed 2048 characters')
   }
 
   // M1: Validate picture field when present
   if (config.picture !== undefined) {
-    if (!config.picture.startsWith('http://') && !config.picture.startsWith('https://')) {
+    const picLower = config.picture.toLowerCase()
+    if (!picLower.startsWith('http://') && !picLower.startsWith('https://')) {
       throw new Error('config.picture must start with http:// or https://')
+    }
+    if (config.picture.length > 2048) {
+      throw new Error('config.picture must not exceed 2048 characters')
     }
   }
 
@@ -96,6 +104,9 @@ export function buildAnnounceEvent(
     if (!Number.isFinite(p.price) || p.price < 0) {
       throw new Error(`config.pricing price must be a finite non-negative number, got: ${p.price}`)
     }
+    if (p.price > Number.MAX_SAFE_INTEGER) {
+      throw new Error(`config.pricing price exceeds MAX_SAFE_INTEGER (${Number.MAX_SAFE_INTEGER})`)
+    }
     if (p.capability.trim().length === 0) {
       throw new Error('config.pricing capability must not be empty or whitespace-only')
     }
@@ -139,6 +150,20 @@ export function buildAnnounceEvent(
 
     const contentObj: Record<string, unknown> = {}
     if (config.capabilities) {
+      if (config.capabilities.length > 100) {
+        throw new Error('config.capabilities must not exceed 100 entries')
+      }
+      for (const cap of config.capabilities) {
+        if (cap.name.trim().length === 0) {
+          throw new Error('config.capabilities name must not be empty or whitespace-only')
+        }
+        if (cap.name.length > 128) {
+          throw new Error('config.capabilities name must not exceed 128 characters')
+        }
+        if (cap.description.length > 4096) {
+          throw new Error('config.capabilities description must not exceed 4096 characters')
+        }
+      }
       contentObj.capabilities = config.capabilities
     }
     if (config.version) {

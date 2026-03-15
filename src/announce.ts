@@ -12,6 +12,11 @@ import type { AnnounceConfig, Announcement } from './types.js'
  * Relay failures are logged but do not reject the promise -- the function
  * degrades gracefully. A warning is emitted if *no* relay accepted the event.
  *
+ * **SSRF note:** Relay URLs are checked against known private/loopback address
+ * patterns, but DNS rebinding (a hostname that resolves to a private IP at
+ * connection time) is not caught. Deploy behind network-level egress controls
+ * in production environments.
+ *
  * @throws If the relay list is empty or contains invalid URLs.
  */
 export async function announceService(config: AnnounceConfig): Promise<Announcement> {

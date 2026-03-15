@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { generateSecretKey } from 'nostr-tools/pure'
 import { buildAnnounceEvent } from '../src/event.js'
+import * as utils from '../src/utils.js'
 import { hexToBytes } from '../src/utils.js'
 import { L402_ANNOUNCE_KIND } from '../src/types.js'
 import type { AnnounceConfig } from '../src/types.js'
@@ -408,6 +409,104 @@ describe('buildAnnounceEvent', () => {
       expect(content.capabilities[0].outputSchema).toBeUndefined()
       expect(content.capabilities[1].schema).toBeUndefined()
       expect(content.capabilities[1].outputSchema).toBeUndefined()
+    })
+  })
+
+  describe('key zeroing', () => {
+    it('zeroes the secret key bytes after signing', () => {
+      let captured: Uint8Array | undefined
+      const orig = utils.hexToBytes
+      vi.spyOn(utils, 'hexToBytes').mockImplementation((hex: string) => {
+        captured = orig(hex)
+        return captured
+      })
+      buildAnnounceEvent(makeSecretKeyHex(), makeConfig())
+      vi.restoreAllMocks()
+      expect(captured).toBeDefined()
+      expect(captured!.every(b => b === 0)).toBe(true)
+    })
+
+    it('zeroes the secret key bytes even when event construction throws', () => {
+      let captured: Uint8Array | undefined
+      const orig = utils.hexToBytes
+      vi.spyOn(utils, 'hexToBytes').mockImplementation((hex: string) => {
+        captured = orig(hex)
+        return captured
+      })
+      // Trigger a throw after hexToBytes by using content that exceeds 64 KiB
+      const hugeSchema = { data: 'x'.repeat(70_000) }
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
+        capabilities: [{ name: 'big', description: 'big', schema: hugeSchema }],
+      }))).toThrow('maximum size')
+      vi.restoreAllMocks()
+      expect(captured).toBeDefined()
+      expect(captured!.every(b => b === 0)).toBe(true)
+    })
+  })
+
+  describe('url and picture length limits', () => {
+    it('rejects url longer than 2048 characters', () => {
+      const longUrl = 'https://example.com/' + 'a'.repeat(2030)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: longUrl }))).toThrow('must not exceed 2048')
+    })
+
+    it('accepts url exactly 2048 characters', () => {
+      const url = 'https://example.com/' + 'a'.repeat(2028)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url }))).not.toThrow()
+    })
+
+    it('rejects picture longer than 2048 characters', () => {
+      const longPic = 'https://example.com/' + 'a'.repeat(2030)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: longPic }))).toThrow('must not exceed 2048')
+    })
+
+    it('accepts uppercase HTTP:// url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'HTTP://example.com' }))).not.toThrow()
+    })
+
+    it('accepts uppercase HTTPS:// url', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'HTTPS://example.com' }))).not.toThrow()
+    })
+
+    it('accepts uppercase HTTPS:// picture', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'HTTPS://example.com/img.png' }))).not.toThrow()
+    })
+  })
+
+  describe('price precision', () => {
+    it('rejects price exceeding MAX_SAFE_INTEGER', () => {
+      const pricing = [{ capability: 'x', price: Number.MAX_SAFE_INTEGER + 1, currency: 'sats' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).toThrow('MAX_SAFE_INTEGER')
+    })
+
+    it('accepts price at MAX_SAFE_INTEGER', () => {
+      const pricing = [{ capability: 'x', price: Number.MAX_SAFE_INTEGER, currency: 'sats' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing }))).not.toThrow()
+    })
+  })
+
+  describe('capabilities validation', () => {
+    it('rejects more than 100 capabilities', () => {
+      const capabilities = Array.from({ length: 101 }, (_, i) => ({
+        name: `cap-${i}`,
+        description: 'desc',
+      }))
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must not exceed 100')
+    })
+
+    it('rejects capability with empty name', () => {
+      const capabilities = [{ name: '', description: 'desc' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('name must not be empty')
+    })
+
+    it('rejects capability name longer than 128 characters', () => {
+      const capabilities = [{ name: 'a'.repeat(129), description: 'desc' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('name must not exceed 128')
+    })
+
+    it('rejects capability description longer than 4096 characters', () => {
+      const capabilities = [{ name: 'x', description: 'a'.repeat(4097) }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('description must not exceed 4096')
     })
   })
 
