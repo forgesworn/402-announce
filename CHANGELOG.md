@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.2.1...v1.3.0) (2026-03-15)
+
+
+### Bug Fixes
+
+* reject private/loopback service URLs in announceService ([909c9a7](https://github.com/TheCryptoDonkey/402-announce/commit/909c9a72b7106ba382e83b51f620e09f4cd5b3fc))
+
+
+### Features
+
+* add live discovery dashboard for kind 31402 services ([09aaea6](https://github.com/TheCryptoDonkey/402-announce/commit/09aaea6af76cbb758e380c8b8f0932cd670ae802))
+
 ## [1.2.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.2.0...v1.2.1) (2026-03-15)
 
 
