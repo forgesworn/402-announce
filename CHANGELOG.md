@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.2.0...v1.2.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* harden schema serialisation and input validation consistency ([a8518ba](https://github.com/TheCryptoDonkey/402-announce/commit/a8518babda3a31fd65ce713d2e56a2800710d8f1))
+
 # [1.2.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.1.5...v1.2.0) (2026-03-15)
 
 
