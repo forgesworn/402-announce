@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.3.0...v1.4.0) (2026-03-15)
+
+
+### Features
+
+* add external directory sources (satring.com, l402.directory) with provenance badges ([46cb169](https://github.com/TheCryptoDonkey/402-announce/commit/46cb169728a93e6a9f0674789afe9e9400a8a721))
+
 # [1.3.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.2.1...v1.3.0) (2026-03-15)
 
 
