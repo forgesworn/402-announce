@@ -412,6 +412,46 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
+  describe('capability endpoint', () => {
+    it('includes endpoint in content when provided', () => {
+      const config = makeConfig({
+        capabilities: [{ name: 'get_joke', description: 'Returns a joke', endpoint: '/api/joke' }],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+      const content = JSON.parse(event.content)
+      expect(content.capabilities[0].endpoint).toBe('/api/joke')
+    })
+
+    it('omits endpoint from content when not provided', () => {
+      const config = makeConfig({
+        capabilities: [{ name: 'get_joke', description: 'Returns a joke' }],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+      const content = JSON.parse(event.content)
+      expect(content.capabilities[0].endpoint).toBeUndefined()
+    })
+
+    it('rejects endpoint longer than 2048 characters', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: '/' + 'a'.repeat(2048) }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must not exceed 2048')
+    })
+
+    it('rejects endpoint that does not start with / or http:// or https://', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: 'ftp://example.com/api' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('must start with /, http://, or https://')
+    })
+
+    it('accepts relative path endpoint', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: '/api/joke' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).not.toThrow()
+    })
+
+    it('accepts full URL endpoint', () => {
+      const capabilities = [{ name: 'x', description: 'desc', endpoint: 'https://api.example.com/v1/chat' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).not.toThrow()
+    })
+  })
+
   describe('key zeroing', () => {
     it('zeroes the secret key bytes after signing', () => {
       let captured: Uint8Array | undefined

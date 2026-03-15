@@ -160,6 +160,18 @@ export function buildAnnounceEvent(
         if (cap.description.length > 4096) {
           throw new Error('config.capabilities description must not exceed 4096 characters')
         }
+        if (cap.endpoint !== undefined) {
+          if (typeof cap.endpoint !== 'string' || cap.endpoint.trim().length === 0) {
+            throw new Error('config.capabilities endpoint must be a non-empty string')
+          }
+          if (cap.endpoint.length > 2048) {
+            throw new Error('config.capabilities endpoint must not exceed 2048 characters')
+          }
+          const epLower = cap.endpoint.toLowerCase()
+          if (!epLower.startsWith('/') && !epLower.startsWith('http://') && !epLower.startsWith('https://')) {
+            throw new Error('config.capabilities endpoint must start with /, http://, or https://')
+          }
+        }
       }
       contentObj.capabilities = config.capabilities
     }

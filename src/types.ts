@@ -12,6 +12,8 @@ export interface PricingDef {
 export interface CapabilityDef {
   name: string
   description: string
+  /** Optional endpoint path or full URL for this capability (e.g. '/api/joke' or 'https://api.example.com/v1/chat'). */
+  endpoint?: string
   /** Optional JSON Schema describing the capability's input parameters. */
   schema?: unknown
   /** Optional JSON Schema describing the capability's output. */
