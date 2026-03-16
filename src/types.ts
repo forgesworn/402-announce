@@ -22,7 +22,9 @@ export interface CapabilityDef {
 
 /** Configuration for announceService(). */
 export interface AnnounceConfig {
-  /** Nostr secret key (64-char hex) for signing events */
+  /** Nostr secret key (64-char hex). The library zeroes internal byte copies
+   *  after signing, but JavaScript strings are immutable and cannot be erased
+   *  from memory — minimise the lifetime of this value in your application. */
   secretKey: string
   /** Nostr relay URLs to publish to (wss:// or ws://) */
   relays: string[]

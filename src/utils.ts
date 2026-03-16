@@ -70,6 +70,15 @@ export function isPrivateHost(hostname: string): boolean {
 
     // Teredo (2001:0000::/32) — block the entire prefix rather than decode
     if (expanded.startsWith('2001:0000:')) return true
+
+    // IPv4-mapped IPv6 in fully expanded form (0000:0000:0000:0000:0000:ffff:HHHH:HHHH)
+    const v4mappedExpanded = expanded.match(/^0000:0000:0000:0000:0000:ffff:([0-9a-f]{4}):([0-9a-f]{4})$/i)
+    if (v4mappedExpanded) {
+      const hi = parseInt(v4mappedExpanded[1], 16)
+      const lo = parseInt(v4mappedExpanded[2], 16)
+      const ip = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
+      return isPrivateIPv4(ip)
+    }
   }
 
   // IPv4-mapped IPv6 — ::ffff:x.x.x.x or ::ffff:HHHH:HHHH

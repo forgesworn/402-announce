@@ -380,6 +380,16 @@ describe('announceService', () => {
         expect(isPrivateHost('2001::abcd')).toBe(true)
       })
 
+      it('rejects fully expanded IPv4-mapped IPv6 with private IP', () => {
+        expect(isPrivateHost('0000:0000:0000:0000:0000:ffff:7f00:0001')).toBe(true)  // 127.0.0.1
+        expect(isPrivateHost('0000:0000:0000:0000:0000:ffff:0a00:0001')).toBe(true)  // 10.0.0.1
+        expect(isPrivateHost('0000:0000:0000:0000:0000:ffff:c0a8:0101')).toBe(true)  // 192.168.1.1
+      })
+
+      it('allows fully expanded IPv4-mapped IPv6 with public IP', () => {
+        expect(isPrivateHost('0000:0000:0000:0000:0000:ffff:0808:0808')).toBe(false)  // 8.8.8.8
+      })
+
       it('rejects IPv6 with zone ID suffix', () => {
         expect(isPrivateHost('[::1%25eth0]')).toBe(true)
         expect(isPrivateHost('::1%eth0')).toBe(true)

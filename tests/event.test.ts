@@ -626,6 +626,89 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
+  describe('runtime type guards', () => {
+    it('rejects non-string secretKey', () => {
+      expect(() => buildAnnounceEvent(123 as any, makeConfig())).toThrow('64-character hex')
+    })
+
+    it('rejects null config', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), null as any)).toThrow('config must be an object')
+    })
+
+    it('rejects non-array urls', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: 'https://example.com' as any }))).toThrow('config.urls must be an array')
+    })
+
+    it('rejects non-string identifier', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: 42 as any }))).toThrow('config.identifier must be a string')
+    })
+
+    it('rejects non-string name', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: 42 as any }))).toThrow('config.name must be a string')
+    })
+
+    it('rejects non-string about', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: null as any }))).toThrow('config.about must be a string')
+    })
+
+    it('rejects non-array pricing', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ pricing: 'bad' as any }))).toThrow('config.pricing must be an array')
+    })
+
+    it('rejects non-array paymentMethods', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: 'bolt11' as any }))).toThrow('config.paymentMethods must be an array')
+    })
+  })
+
+  describe('dangerous URL schemes in urls', () => {
+    it('rejects data: URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['data:text/html,<h1>hi</h1>'] }))).toThrow('disallowed scheme')
+    })
+
+    it('rejects file: URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['file:///etc/passwd'] }))).toThrow('disallowed scheme')
+    })
+
+    it('rejects blob: URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['blob:http://example.com/uuid'] }))).toThrow('disallowed scheme')
+    })
+
+    it('still accepts http:// and https:// URLs', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['https://example.com'] }))).not.toThrow()
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['http://example.com'] }))).not.toThrow()
+    })
+
+    it('still accepts exotic transport schemes (hyper://)', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['hyper://abc123.example'] }))).not.toThrow()
+    })
+  })
+
+  describe('topics empty/whitespace validation', () => {
+    it('rejects empty string topic', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics: [''] }))).toThrow('must not be empty')
+    })
+
+    it('rejects whitespace-only topic', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics: ['  '] }))).toThrow('must not be empty')
+    })
+  })
+
+  describe('version empty/whitespace validation', () => {
+    it('rejects empty string version', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ version: '' }))).toThrow('non-empty string')
+    })
+
+    it('rejects whitespace-only version', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ version: '   ' }))).toThrow('non-empty string')
+    })
+
+    it('accepts undefined version (optional)', () => {
+      const config = makeConfig()
+      delete (config as any).version
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), config)).not.toThrow()
+    })
+  })
+
   describe('content size limit', () => {
     it('rejects content exceeding 64 KiB', () => {
       const hugeSchema = { data: 'x'.repeat(70_000) }

@@ -72,8 +72,7 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
     try {
       parsed = new URL(serviceUrlStr)
     } catch {
-      // Already validated by buildAnnounceEvent — should not reach here
-      throw new Error(`Invalid service URL: ${serviceUrlStr}`)
+      throw new Error(`Invalid service URL: ${serviceUrlStr.slice(0, 200)}`)
     }
     const scheme = parsed.protocol // includes trailing colon
     if (scheme !== 'http:' && scheme !== 'https:') {

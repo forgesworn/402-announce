@@ -18,6 +18,32 @@ export function buildAnnounceEvent(
   secretKeyHex: string,
   config: Omit<AnnounceConfig, 'relays'>,
 ): VerifiedEvent {
+  // Runtime type guards for JavaScript consumers
+  if (typeof secretKeyHex !== 'string') {
+    throw new Error('secretKey must be a 64-character hex string')
+  }
+  if (typeof config !== 'object' || config === null) {
+    throw new Error('config must be an object')
+  }
+  if (typeof config.identifier !== 'string') {
+    throw new Error('config.identifier must be a string')
+  }
+  if (typeof config.name !== 'string') {
+    throw new Error('config.name must be a string')
+  }
+  if (!Array.isArray(config.urls)) {
+    throw new Error('config.urls must be an array of strings')
+  }
+  if (typeof config.about !== 'string') {
+    throw new Error('config.about must be a string')
+  }
+  if (!Array.isArray(config.pricing)) {
+    throw new Error('config.pricing must be an array')
+  }
+  if (!Array.isArray(config.paymentMethods)) {
+    throw new Error('config.paymentMethods must be an array')
+  }
+
   if (!/^[0-9a-f]{64}$/i.test(secretKeyHex)) {
     throw new Error('secretKey must be a 64-character hex string')
   }
@@ -30,15 +56,20 @@ export function buildAnnounceEvent(
   if (config.urls.length > 10) {
     throw new Error('config.urls must not exceed 10 entries')
   }
+  const DENIED_URL_SCHEMES = new Set(['data:', 'file:', 'javascript:', 'blob:', 'vbscript:'])
   const seenUrls = new Set<string>()
   for (const u of config.urls) {
     if (u.length > 2048) {
       throw new Error('config.urls entry must not exceed 2048 characters')
     }
+    let parsed: URL
     try {
-      new URL(u)
+      parsed = new URL(u)
     } catch {
-      throw new Error(`config.urls entry is not a valid URL: ${u}`)
+      throw new Error(`config.urls entry is not a valid URL: ${u.slice(0, 200)}`)
+    }
+    if (DENIED_URL_SCHEMES.has(parsed.protocol)) {
+      throw new Error(`config.urls entry uses a disallowed scheme: ${parsed.protocol}`)
     }
     if (seenUrls.has(u)) {
       throw new Error('config.urls must not contain duplicate entries')
@@ -83,6 +114,9 @@ export function buildAnnounceEvent(
       throw new Error('config.topics must not exceed 50 entries')
     }
     for (const topic of config.topics) {
+      if (topic.trim().length === 0) {
+        throw new Error('config.topics entries must not be empty or whitespace-only')
+      }
       if (topic.length > 64) {
         throw new Error(`config.topics entry must not exceed 64 characters, got: "${topic.slice(0, 20)}..."`)
       }
@@ -106,8 +140,13 @@ export function buildAnnounceEvent(
   }
 
   // Validate version early (before content construction)
-  if (config.version && config.version.length > 64) {
-    throw new Error('config.version must not exceed 64 characters')
+  if (config.version !== undefined) {
+    if (typeof config.version !== 'string' || config.version.trim().length === 0) {
+      throw new Error('config.version must be a non-empty string')
+    }
+    if (config.version.length > 64) {
+      throw new Error('config.version must not exceed 64 characters')
+    }
   }
 
   // M3: Validate all pricing entries
