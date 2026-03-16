@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.6.0...v1.7.0) (2026-03-16)
+
+
+### Features
+
+* add particle network, pulsing relays, live counters, new-service flash ([679bf27](https://github.com/TheCryptoDonkey/402-announce/commit/679bf27148610bfbca5c0dd97ffb7e92854e9c4e))
+
 # [1.6.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.5.0...v1.6.0) (2026-03-16)
 
 
