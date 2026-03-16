@@ -6,7 +6,7 @@ Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L
 
 Publishes **kind 31402** parameterised replaceable events so that AI agents (and any Nostr client) can discover paid APIs without a central registry.
 
-**[Live Dashboard](https://discover.trotters.dev)** — see every service announcing on the network right now.
+**[Live Dashboard](https://402.pub)** — see every service announcing on the network right now.
 
 ## How it works
 
@@ -238,7 +238,7 @@ The event content is a JSON object with optional fields:
 | [toll-booth-announce](https://github.com/TheCryptoDonkey/toll-booth-announce) | Bridge — announce toll-booth services with one function call |
 | [satgate](https://github.com/TheCryptoDonkey/satsgate) | Production L402 gateway with Lightning and Cashu support |
 | [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) | MCP server for AI agents to discover, pay, and consume 402 APIs |
-| [Live Dashboard](https://discover.trotters.dev) | See every service announcing on the network |
+| [Live Dashboard](https://402.pub) | See every service announcing on the network |
 
 ## Licence
 
