@@ -1,3 +1,12 @@
+# [1.8.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.7.0...v1.8.0) (2026-03-16)
+
+
+### Features
+
+* card action buttons — visit API and copy curl ([a60771a](https://github.com/TheCryptoDonkey/402-announce/commit/a60771a0b6338f2a595f46df61a3118afa51273e))
+* dual-audience section — developers and AI agents with tab toggle ([dffb611](https://github.com/TheCryptoDonkey/402-announce/commit/dffb611cb8610553649afcf0a2f107dd574fa27b))
+* hero redesign — trust badges, CTAs, smooth scroll ([d6ece6c](https://github.com/TheCryptoDonkey/402-announce/commit/d6ece6c493e23187fd0565093f0cc7105076b0bc))
+
 # [1.7.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.6.0...v1.7.0) (2026-03-16)
 
 
