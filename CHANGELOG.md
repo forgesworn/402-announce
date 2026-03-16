@@ -1,3 +1,14 @@
+## [1.11.2](https://github.com/TheCryptoDonkey/402-announce/compare/v1.11.1...v1.11.2) (2026-03-16)
+
+
+### Bug Fixes
+
+* add control char validation to capabilities and version fields ([7134fb2](https://github.com/TheCryptoDonkey/402-announce/commit/7134fb29f68356362b2bdcf5aaa24642c4d64d70))
+* add secret file patterns to .gitignore ([066679d](https://github.com/TheCryptoDonkey/402-announce/commit/066679d219008456d6533c79add57d6d7657d959))
+* harden input validation with control char rejection and schema depth limit ([d4b143b](https://github.com/TheCryptoDonkey/402-announce/commit/d4b143bb5e173d212eb540cd069dda8a5970908c))
+* pin CI actions by SHA to prevent supply chain attacks ([8b30438](https://github.com/TheCryptoDonkey/402-announce/commit/8b304385cba8a7a1e0b4a5b66dc90f7255defd9a))
+* prevent stack overflow in jsonDepth and reject control chars in URLs ([6d7aba6](https://github.com/TheCryptoDonkey/402-announce/commit/6d7aba69b14f3d303275e8bdc0f72f67ab63e78f))
+
 ## [1.11.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.11.0...v1.11.1) (2026-03-16)
 
 
