@@ -1,3 +1,13 @@
+# [1.11.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.10.0...v1.11.0) (2026-03-16)
+
+
+### Features
+
+* announceService iterates urls for SSRF check, skips .onion ([651ff62](https://github.com/TheCryptoDonkey/402-announce/commit/651ff622dcb2b31d5807c6d046713b7f858beac4))
+* buildAnnounceEvent supports multiple url tags (1-10 urls) ([00ae404](https://github.com/TheCryptoDonkey/402-announce/commit/00ae4042d0e5e15992d3f136a72f00ede30f6ced))
+* change AnnounceConfig.url to urls (string[]) ([70bdcd5](https://github.com/TheCryptoDonkey/402-announce/commit/70bdcd599f39f59a54f911ee368fa60f7167ff28))
+* redirect discover.trotters.dev to 402.pub ([c139750](https://github.com/TheCryptoDonkey/402-announce/commit/c13975057336f3fc5e5af356f6adbbcce5551576))
+
 # [1.10.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.9.0...v1.10.0) (2026-03-16)
 
 
