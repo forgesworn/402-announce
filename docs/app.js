@@ -165,6 +165,12 @@ function handleEvent(event) {
   // Require all four mandatory fields
   if (!dTag || !name || !url || !about) return
 
+  // Skip localhost/private URLs — these are misconfigured announcements
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '0.0.0.0') return
+  } catch { return }
+
   // NIP-40: honour event expiration
   const expiration = getTag('expiration')
   if (expiration && parseInt(expiration, 10) < Math.floor(Date.now() / 1000)) return
@@ -614,11 +620,9 @@ function getTimeAgo(timestamp) {
  */
 
 const EXTERNAL_SOURCES = [
-  {
-    name: 'satring.com',
-    url: 'https://satring.com/api/v1/services/bulk',
-    parse: parseSatringServices,
-  },
+  // satring.com — disabled: CORS headers not set, browser fetch blocked.
+  // Re-enable when they add Access-Control-Allow-Origin or use pre-seeded JSON.
+  // { name: 'satring.com', url: 'https://satring.com/api/v1/services/bulk', parse: parseSatringServices },
   {
     name: 'l402.directory',
     url: 'https://l402.directory/api/services',
