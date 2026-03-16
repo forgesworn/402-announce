@@ -38,7 +38,7 @@ const handle = await announceService({
   relays: ['wss://relay.damus.io', 'wss://relay.primal.net'],
   identifier: 'jokes-api',
   name: 'Jokes API',
-  url: 'https://jokes.example.com',
+  urls: ['https://jokes.example.com'],
   about: 'A joke-telling service behind an L402 paywall',
   pricing: [
     { capability: 'get_joke', price: 1, currency: 'sats' },
@@ -57,6 +57,28 @@ console.log('From pubkey:', handle.pubkey)
 // Later, when shutting down:
 handle.close()
 ```
+
+**Multi-transport example** (clearnet + Tor + Handshake — same service, different access paths):
+
+```typescript
+const handle = await announceService({
+  secretKey: '64-char-hex-nostr-secret-key',
+  relays: ['wss://relay.damus.io', 'wss://relay.primal.net'],
+  identifier: 'jokes-api',
+  name: 'Jokes API',
+  urls: [
+    'https://jokes.example.com',                  // clearnet
+    'http://jokesxyz...onion',                    // Tor hidden service
+    'https://jokes.example.hns',                  // Handshake domain
+  ],
+  about: 'A joke-telling service behind an L402 paywall',
+  pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
+  paymentMethods: ['bitcoin-lightning-bolt11'],
+  topics: ['comedy', 'ai'],
+})
+```
+
+Each URL becomes a separate `url` tag in the kind 31402 event. Clients try them in order and use whichever they can reach. `urls` accepts 1–10 entries; any parseable URL is valid.
 
 See [`examples/`](./examples) for runnable scripts.
 
@@ -133,7 +155,7 @@ Lower-level function that builds and signs the event without publishing. Useful 
 | `relays`         | `string[]`        | yes      | Relay URLs (`wss://` or `ws://`)               |
 | `identifier`     | `string`          | yes      | Unique listing ID (Nostr `d` tag)              |
 | `name`           | `string`          | yes      | Human-readable service name                    |
-| `url`            | `string`          | yes      | HTTP endpoint for the service                  |
+| `urls`           | `string[]`        | yes      | HTTP endpoints for the service (1–10 entries, any parseable URL) |
 | `about`          | `string`          | yes      | Short description                              |
 | `pricing`        | `PricingDef[]`    | yes      | Per-capability pricing                         |
 | `paymentMethods` | `string[]`        | yes      | Accepted payment methods                       |
@@ -171,7 +193,8 @@ graph TB
         subgraph Tags
             D["d: jokes-api"]
             N["name: Jokes API"]
-            U["url: https://jokes.example.com"]
+            U1["url: https://jokes.example.com"]
+            U2["url: https://jokesapi.example.onion (optional)"]
             AB["about: A joke-telling service"]
             PMI1["pmi: bitcoin-lightning-bolt11"]
             PMI2["pmi: bitcoin-cashu"]
@@ -194,7 +217,7 @@ graph TB
 |-----------|----------|----------------------------------------------|-----------------------------------|
 | `d`       | yes      | Unique identifier for this listing           | `jokes-api`                       |
 | `name`    | yes      | Human-readable service name                  | `Jokes API`                       |
-| `url`     | yes      | HTTP endpoint for the 402 service            | `https://jokes.example.com`       |
+| `url`     | yes      | HTTP endpoint (one tag per URL; repeatable)  | `https://jokes.example.com`       |
 | `about`   | yes      | Short description                            | `A joke-telling service`          |
 | `pmi`     | yes      | Payment method identifier (repeatable)       | `bitcoin-lightning-bolt11`        |
 | `price`   | yes      | Capability pricing (repeatable)              | `get_joke`, `1`, `sats`           |
@@ -222,6 +245,16 @@ The event content is a JSON object with optional fields:
   "version": "1.0.0"
 }
 ```
+
+## Multiple URLs vs multiple events
+
+This distinction is important for operators:
+
+**Multiple URLs in one event** — use `urls: ['...', '...']` when the URLs represent the **same service** on different transports (clearnet, Tor, Handshake). The pricing, credentials, and macaroon signing key are identical. Clients pick whichever URL they can reach. This is for censorship resistance and redundancy.
+
+**Separate kind 31402 events** — publish a new event (different `identifier`) when you have **genuinely different services**: different pricing tiers per transport, different capabilities, or services that operate independently. A single event should describe one logical service.
+
+In short: same service + different network paths → one event with multiple `url` tags. Different services → separate events.
 
 ## Security
 
