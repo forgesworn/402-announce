@@ -265,8 +265,10 @@ function renderRelayStatus() {
   const relayList = [...relays.values()]
   const connected = relayList.filter(r => r.status === 'connected').length
 
-  document.getElementById('relay-count').textContent =
-    connected + ' relay' + (connected !== 1 ? 's' : '')
+  const relayCountEl = document.getElementById('relay-count')
+  if (relayCountEl) {
+    relayCountEl.textContent = connected + ' relay' + (connected !== 1 ? 's' : '') + ' connected'
+  }
 
   // Build each relay indicator using safe DOM construction
   // (not innerHTML) since relay URLs may come from localStorage
@@ -346,16 +348,15 @@ function renderServices() {
   // Sort by most recently announced first
   filtered.sort((a, b) => b.createdAt - a.createdAt)
 
-  // Update service count in header (with bounce animation on change)
+  // Update service count in toolbar (with bounce animation on change)
   const nostrCount = allServices.filter(s => s.source === 'nostr').length
   const indexedCount = allServices.length - nostrCount
-  const parts = []
-  if (nostrCount > 0) parts.push(nostrCount + ' self-announced')
-  if (indexedCount > 0) parts.push(indexedCount + ' indexed')
   const countEl = document.getElementById('service-count')
   const newText =
-    allServices.length + ' service' + (allServices.length !== 1 ? 's' : '') +
-    (parts.length > 0 ? ' (' + parts.join(', ') + ')' : '')
+    allServices.length + ' live service' + (allServices.length !== 1 ? 's' : '') +
+    (nostrCount > 0 && indexedCount > 0
+      ? ' (' + nostrCount + ' streaming, ' + indexedCount + ' indexed)'
+      : '')
 
   if (countEl.textContent !== newText) {
     countEl.textContent = newText

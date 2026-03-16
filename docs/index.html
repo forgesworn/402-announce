@@ -27,9 +27,6 @@
         <a href="#announce" class="btn btn-secondary" id="announce-cta">Announce yours</a>
       </div>
 
-      <div class="stats">
-        <span id="service-count">0 services</span> found across <span id="relay-count">0 relays</span>
-      </div>
       <div id="relay-status" class="relay-status" role="status" aria-label="Relay connection status"></div>
     </div>
   </header>
@@ -93,12 +90,20 @@ ws.onmessage = (e) => {
       </div>
     </section>
 
-    <section id="filters" class="filters" aria-label="Filter services">
-      <label for="search" class="sr-only">Search services</label>
-      <input type="search" id="search" placeholder="Search services..." autocomplete="off" aria-label="Search services">
-      <div id="payment-filters" class="filter-pills" role="group" aria-label="Filter by payment method"></div>
-      <div id="topic-filters" class="filter-pills" role="group" aria-label="Filter by topic"></div>
-    </section>
+    <div id="filters" class="services-toolbar" aria-label="Filter services">
+      <div class="toolbar-status" role="status" aria-live="polite">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="service-count">0 services</span>
+        <span class="toolbar-sep" aria-hidden="true"></span>
+        <span id="relay-count" class="relay-count-inline">0 relays</span>
+      </div>
+      <div class="toolbar-filters">
+        <label for="search" class="sr-only">Search services</label>
+        <input type="search" id="search" placeholder="Search..." autocomplete="off" aria-label="Search services">
+        <div id="payment-filters" class="filter-pills" role="group" aria-label="Filter by payment method"></div>
+        <div id="topic-filters" class="filter-pills" role="group" aria-label="Filter by topic"></div>
+      </div>
+    </div>
 
     <div id="loading" class="loading" role="status" aria-live="polite">Connecting to relays...</div>
 
