@@ -557,6 +557,26 @@ function buildCard(s) {
     article.appendChild(meta)
   }
 
+  // --- Action buttons ---
+  const actions = document.createElement('div')
+  actions.className = 'card-actions'
+
+  const visitBtn = document.createElement('a')
+  visitBtn.href = s.url
+  visitBtn.target = '_blank'
+  visitBtn.rel = 'noopener noreferrer'
+  visitBtn.className = 'btn-action btn-visit'
+  visitBtn.textContent = 'Visit API \u2197'
+  actions.appendChild(visitBtn)
+
+  const curlBtn = document.createElement('button')
+  curlBtn.className = 'btn-action btn-curl'
+  curlBtn.dataset.url = s.url
+  curlBtn.textContent = 'Copy curl'
+  actions.appendChild(curlBtn)
+
+  article.appendChild(actions)
+
   // --- Footer: pubkey ---
   if (s.pubkey) {
     const footer = document.createElement('div')
@@ -883,6 +903,22 @@ document.addEventListener('click', (e) => {
   tab.setAttribute('aria-selected', 'true')
   const panel = document.getElementById(tab.getAttribute('aria-controls'))
   if (panel) panel.hidden = false
+})
+
+// Copy curl command to clipboard
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-curl')
+  if (!btn) return
+
+  const url = btn.dataset.url
+  const cmd = '# Returns 402 with a Lightning invoice \u2014 pay to get an L402 token\ncurl -i ' + url + ' -H "Accept: application/json"'
+  navigator.clipboard.writeText(cmd).then(() => {
+    btn.textContent = 'Copied!'
+    setTimeout(() => { btn.textContent = 'Copy curl' }, 1500)
+  }).catch(() => {
+    btn.textContent = 'Error'
+    setTimeout(() => { btn.textContent = 'Copy curl' }, 1500)
+  })
 })
 
 // Arrow key navigation between tabs (WAI-ARIA Tabs pattern)

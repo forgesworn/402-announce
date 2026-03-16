@@ -958,6 +958,44 @@ main {
 }
 
 /* ============================================================
+   Card Action Buttons
+   ============================================================ */
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: 1px solid var(--border-medium);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-action:hover {
+  border-color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
+  text-decoration: none;
+}
+
+.btn-action:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================
    Loading & Empty States — Skeleton Pulse
    ============================================================ */
 
