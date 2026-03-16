@@ -1,4 +1,43 @@
 /* ============================================================
+   Google Fonts — JetBrains Mono (headings/code) + DM Sans (body)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   CSS Custom Properties
+   ============================================================ */
+
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-surface: #12121a;
+  --bg-surface-hover: #1a1a26;
+  --bg-surface-elevated: #1e1e2a;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --accent-amber: #f59e0b;
+  --accent-amber-dim: rgba(245, 158, 11, 0.15);
+  --accent-amber-glow: rgba(245, 158, 11, 0.25);
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: rgba(59, 130, 246, 0.12);
+  --accent-blue-glow: rgba(59, 130, 246, 0.25);
+  --text-primary: #e8e8ed;
+  --text-secondary: #7a7a8a;
+  --text-muted: #55556a;
+  --colour-success: #22c55e;
+  --colour-warning: #f59e0b;
+  --colour-error: #ef4444;
+  --font-heading: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-code: 'JetBrains Mono', 'SF Mono', Consolas, 'Liberation Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --max-width: 1400px;
+}
+
+/* ============================================================
    Base & Reset
    ============================================================ */
 
@@ -10,20 +49,69 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #fff;
-  color: #111827;
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animated background grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 70%);
+}
+
+/* Slow gradient sweep overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 50% 40% at 50% 0%,
+    rgba(245, 158, 11, 0.04) 0%,
+    transparent 70%
+  );
+  animation: gradientSweep 12s ease-in-out infinite alternate;
+}
+
+@keyframes gradientSweep {
+  0% {
+    background: radial-gradient(
+      ellipse 50% 40% at 30% 0%,
+      rgba(245, 158, 11, 0.04) 0%,
+      transparent 70%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      ellipse 50% 40% at 70% 0%,
+      rgba(59, 130, 246, 0.03) 0%,
+      transparent 70%
+    );
+  }
 }
 
 a {
-  color: #3b82f6;
+  color: var(--accent-blue);
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 a:hover {
-  text-decoration: underline;
+  color: #60a5fa;
+  text-decoration: none;
 }
 
 /* Screen-reader only utility */
@@ -40,71 +128,146 @@ a:hover {
 }
 
 /* ============================================================
-   Header
+   Header — Hero Section
    ============================================================ */
 
 header {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 2rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 3rem 0 2.5rem;
+  position: relative;
+}
+
+/* Subtle bottom glow on header */
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-amber-dim) 30%,
+    var(--accent-amber-glow) 50%,
+    var(--accent-amber-dim) 70%,
+    transparent
+  );
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 header h1 {
-  font-size: 2rem;
+  font-family: var(--font-heading);
+  font-size: 2.75rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
-  color: #111827;
+  margin: 0 0 0.75rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Glowing accent on "Paid APIs" — achieved via text-shadow on the whole h1 */
+header h1::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--accent-amber);
+  border-radius: 2px;
+  margin-top: 0.75rem;
+  box-shadow: 0 0 20px var(--accent-amber-glow), 0 0 40px rgba(245, 158, 11, 0.1);
 }
 
 .subtitle {
-  color: #6b7280;
-  margin: 0 0 1rem;
-  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+.subtitle a {
+  color: var(--accent-amber);
+  font-family: var(--font-code);
+  font-size: 0.9em;
+  padding: 0.1em 0.4em;
+  background: var(--accent-amber-dim);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s, color 0.2s;
+}
+
+.subtitle a:hover {
+  background: var(--accent-amber-glow);
+  color: var(--accent-amber);
 }
 
 .stats {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-family: var(--font-code);
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 /* ============================================================
-   Relay Status Dots
+   Relay Status — Horizontal Bar with Pulsing Dots
    ============================================================ */
 
 .relay-status {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
 }
 
 .relay-dot {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .relay-dot .dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: var(--dot-colour, #9ca3af);
+  background-color: var(--dot-colour, #555);
   flex-shrink: 0;
+  transition: background-color 0.3s;
+}
+
+/* Pulsing glow for connected relays (green dot) */
+.relay-dot[style*="--dot-colour: #22c55e"] .dot {
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  animation: relayPulse 2s ease-in-out infinite;
+}
+
+/* Pulsing for connecting relays (amber dot) */
+.relay-dot[style*="--dot-colour: #f59e0b"] .dot {
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+  animation: relayPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes relayPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .relay-label {
-  /* Visible text label alongside colour dot for colour-blind safety */
   font-size: 0.78rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+  font-family: var(--font-code);
 }
 
 /* ============================================================
@@ -112,75 +275,91 @@ header h1 {
    ============================================================ */
 
 main {
-  max-width: 1200px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 /* ============================================================
-   Filters
+   Filters — Search Bar + Filter Pills
    ============================================================ */
 
 .filters {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
+/* Glass-morphism search bar */
 #search {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1.25rem;
   font-size: 1rem;
-  font-family: inherit;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  font-family: var(--font-body);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
   outline: none;
-  color: #111827;
-  background: #fff;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  color: var(--text-primary);
+  background: rgba(18, 18, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+#search::placeholder {
+  color: var(--text-muted);
 }
 
 #search:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px var(--accent-blue-dim), 0 0 20px rgba(59, 130, 246, 0.08);
+  background: rgba(18, 18, 26, 0.9);
 }
 
 .filter-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
+/* Outlined filter pills */
 .pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.85rem;
-  font-family: inherit;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
   cursor: pointer;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #6b7280;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border: 1px solid var(--border-medium);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s;
   line-height: 1.4;
 }
 
 .pill:hover {
-  border-color: #9ca3af;
-  background: #f3f4f6;
-  color: #374151;
+  border-color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
 }
 
+.pill:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* Active pill — filled with accent */
 .pill.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: #fff;
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+  color: #0a0a0f;
+  font-weight: 500;
 }
 
 .pill.active:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #d97706;
+  border-color: #d97706;
 }
 
 /* ============================================================
@@ -189,62 +368,102 @@ main {
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 /* ============================================================
-   Service Card
+   Service Card — Dark Surface with Glow Hover
    ============================================================ */
 
 .service-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  transition: box-shadow 0.2s;
+  gap: 0.85rem;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  position: relative;
+  /* Staggered entrance animation */
+  opacity: 0;
+  animation: cardEntrance 0.5s ease forwards;
 }
 
+/* Stagger card animation using nth-child */
+.service-card:nth-child(1)  { animation-delay: 0.0s; }
+.service-card:nth-child(2)  { animation-delay: 0.05s; }
+.service-card:nth-child(3)  { animation-delay: 0.1s; }
+.service-card:nth-child(4)  { animation-delay: 0.15s; }
+.service-card:nth-child(5)  { animation-delay: 0.2s; }
+.service-card:nth-child(6)  { animation-delay: 0.25s; }
+.service-card:nth-child(7)  { animation-delay: 0.3s; }
+.service-card:nth-child(8)  { animation-delay: 0.35s; }
+.service-card:nth-child(9)  { animation-delay: 0.4s; }
+.service-card:nth-child(10) { animation-delay: 0.45s; }
+.service-card:nth-child(11) { animation-delay: 0.5s; }
+.service-card:nth-child(12) { animation-delay: 0.55s; }
+.service-card:nth-child(n+13) { animation-delay: 0.6s; }
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover glow effect */
 .service-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(245, 158, 11, 0.06);
+  transform: translateY(-2px);
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 .service-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
 }
 
 .service-name {
-  font-size: 1.15rem;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   text-decoration: none;
   word-break: break-word;
+  transition: color 0.2s;
+  letter-spacing: -0.01em;
 }
 
 .service-name:hover {
-  color: #3b82f6;
+  color: var(--accent-amber);
   text-decoration: none;
 }
 
 .service-about {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
-  /* Clamp to 3 lines */
+  line-height: 1.55;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -252,73 +471,104 @@ main {
 }
 
 /* ============================================================
-   Pricing Table
+   Pricing Table — Accent Border, Compact
    ============================================================ */
 
 .pricing-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  border-left: 2px solid var(--accent-amber);
+  margin-left: 2px;
 }
 
 .pricing-table th {
   text-align: left;
   font-weight: 600;
-  color: #374151;
-  padding: 0.3rem 0.5rem;
+  color: var(--text-secondary);
+  padding: 0.35rem 0.6rem;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .pricing-table td {
-  padding: 0.3rem 0.5rem;
-  color: #4b5563;
+  padding: 0.35rem 0.6rem;
+  color: var(--text-secondary);
+  font-family: var(--font-code);
+  font-size: 0.8rem;
 }
 
 .pricing-table tbody tr:nth-child(odd) {
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pricing-table tbody tr {
+  transition: background 0.15s;
+}
+
+.pricing-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ============================================================
-   Badges
+   Badges — Glass-morphism Style
    ============================================================ */
 
 .badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   line-height: 1.4;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
+/* Payment method badges — blue tint glass */
 .badge.payment {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
+/* Source badge — top-right of card header */
 .badge.source {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   margin-left: auto;
+  font-family: var(--font-code);
+  letter-spacing: 0.02em;
+  order: 99; /* push to end of flex row */
 }
 
+/* Self-announced: green tint */
 .badge.source-nostr {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.15);
 }
 
+/* Indexed: amber tint */
 .badge.source-indexed {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.15);
 }
 
+/* Topic badges — subtle glass */
 .badge.topic {
-  background: #f3f4f6;
-  color: #374151;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 /* ============================================================
@@ -331,124 +581,161 @@ main {
   align-items: center;
   gap: 0.5rem;
   margin-top: auto;
-  padding-top: 0.5rem;
-  border-top: 1px solid #f3f4f6;
-  font-size: 0.8rem;
-  color: #9ca3af;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  color: var(--text-muted);
   flex-wrap: wrap;
 }
 
 .pubkey {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .pubkey code {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .copy-pubkey {
   background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.75rem;
-  color: #9ca3af;
+  border: 1px solid var(--border-subtle);
+  padding: 0.15rem 0.45rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
   cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s;
+  font-family: var(--font-code);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
 }
 
 .copy-pubkey:hover {
-  color: #3b82f6;
+  color: var(--accent-blue);
+  border-color: var(--accent-blue-dim);
+  background: var(--accent-blue-dim);
+}
+
+.copy-pubkey:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 .timestamp {
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-size: 0.78rem;
+  color: var(--text-muted);
   text-align: right;
   white-space: nowrap;
+  font-family: var(--font-code);
 }
 
 /* ============================================================
-   Loading & Empty States
+   Loading & Empty States — Skeleton Pulse
    ============================================================ */
 
 .loading {
   text-align: center;
-  color: #9ca3af;
-  padding: 4rem 1rem;
+  color: var(--text-secondary);
+  padding: 5rem 1rem;
   font-size: 1rem;
-  animation: pulse 1.5s ease-in-out infinite;
+  font-family: var(--font-code);
+  animation: skeletonPulse 2s ease-in-out infinite;
 }
 
 .loading.error {
   animation: none;
-  color: #ef4444;
+  color: var(--colour-error);
 }
 
 .empty-state {
   text-align: center;
-  color: #9ca3af;
-  padding: 4rem 1rem;
+  color: var(--text-secondary);
+  padding: 5rem 1rem;
   font-size: 1rem;
 }
 
-@keyframes pulse {
+@keyframes skeletonPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.35; }
 }
 
 /* ============================================================
-   Announce CTA Section
+   Announce CTA Section — Gradient Background
    ============================================================ */
 
 .announce-cta {
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-  padding: 3rem 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.06) 0%,
+    var(--bg-surface) 40%,
+    rgba(59, 130, 246, 0.04) 100%
+  );
+  border: 1px solid var(--border-subtle);
+  padding: 3.5rem 2.5rem;
   text-align: center;
-  margin-top: 3rem;
-  border-radius: 12px;
+  margin-top: 3.5rem;
+  border-radius: var(--radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top highlight */
+.announce-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-amber-dim) 50%,
+    transparent
+  );
 }
 
 .announce-cta h2 {
-  font-size: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
-  color: #111827;
+  margin: 0 0 0.6rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .announce-cta > p {
-  color: #6b7280;
-  margin: 0 0 1.5rem;
+  color: var(--text-secondary);
+  margin: 0 0 2rem;
+  font-size: 1.05rem;
 }
 
 .announce-cta pre {
-  margin: 0 auto 1.5rem;
-  max-width: 640px;
+  margin: 0 auto 2rem;
+  max-width: 680px;
   text-align: left;
 }
 
 .announce-cta code {
   display: block;
-  background: #1e293b;
-  color: #e2e8f0;
-  padding: 1.5rem;
-  border-radius: 8px;
+  background: #0d0d14;
+  color: #c4c4d0;
+  padding: 1.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
   overflow-x: auto;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  font-family: var(--font-code);
   white-space: pre;
 }
 
 .cta-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.85rem;
   justify-content: center;
   margin-top: 0.5rem;
 }
@@ -456,20 +743,26 @@ main {
 .cta-links a {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: #374151;
+  padding: 0.6rem 1.15rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
   text-decoration: none;
-  transition: border-color 0.15s, background 0.15s;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
 .cta-links a:hover {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #3b82f6;
+  border-color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
   text-decoration: none;
+}
+
+.cta-links a:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 /* ============================================================
@@ -477,20 +770,35 @@ main {
    ============================================================ */
 
 footer {
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
-  color: #9ca3af;
-  font-size: 0.85rem;
-  border-top: 1px solid #e5e7eb;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border-subtle);
   margin-top: 2rem;
 }
 
 footer a {
-  color: #9ca3af;
+  color: var(--text-muted);
+  transition: color 0.2s;
 }
 
 footer a:hover {
-  color: #3b82f6;
+  color: var(--accent-amber);
+}
+
+/* ============================================================
+   Responsive — Tablet (≤ 1024px)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+  }
 }
 
 /* ============================================================
@@ -499,15 +807,28 @@ footer a:hover {
 
 @media (max-width: 640px) {
   header {
-    padding: 1.25rem 0;
+    padding: 2rem 0 1.75rem;
+  }
+
+  .header-content {
+    padding: 0 1.25rem;
   }
 
   header h1 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+  }
+
+  main {
+    padding: 1.25rem;
   }
 
   .services-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .service-card {
+    padding: 1.25rem;
   }
 
   .filters {
@@ -515,11 +836,22 @@ footer a:hover {
   }
 
   .filter-pills {
-    flex-direction: row; /* wrap naturally on mobile */
+    flex-direction: row;
+  }
+
+  .relay-status {
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
   }
 
   .announce-cta {
-    padding: 2rem 1rem;
+    padding: 2.5rem 1.25rem;
+    margin-top: 2.5rem;
+  }
+
+  .announce-cta code {
+    font-size: 0.75rem;
+    padding: 1.25rem;
   }
 
   .cta-links {
@@ -530,5 +862,28 @@ footer a:hover {
   .card-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   Reduced Motion — Respect user preference
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
+
+  .service-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .relay-dot .dot {
+    animation: none;
+  }
+
+  .loading {
+    animation: none;
   }
 }
