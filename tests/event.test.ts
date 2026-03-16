@@ -585,11 +585,11 @@ describe('buildAnnounceEvent', () => {
   })
 
   describe('circular reference in schema', () => {
-    it('rejects schema with circular reference', () => {
+    it('rejects schema with circular reference (caught by depth check)', () => {
       const circular: Record<string, unknown> = { name: 'test' }
       circular.self = circular
       const capabilities = [{ name: 'x', description: 'desc', schema: circular }]
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('circular reference')
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('nesting exceeds maximum depth')
     })
 
     it('zeroes key bytes even when schema has circular reference', () => {
@@ -602,7 +602,7 @@ describe('buildAnnounceEvent', () => {
       const circular: Record<string, unknown> = { name: 'test' }
       circular.self = circular
       const capabilities = [{ name: 'x', description: 'desc', schema: circular }]
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('circular reference')
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('nesting exceeds maximum depth')
       vi.restoreAllMocks()
       expect(captured).toBeDefined()
       expect(captured!.every(b => b === 0)).toBe(true)
@@ -740,6 +740,127 @@ describe('buildAnnounceEvent', () => {
         capabilities: [{ name: 'big', description: 'big', schema: hugeSchema }],
       })
       expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('maximum size')
+    })
+  })
+
+  describe('control character rejection', () => {
+    it('rejects null byte in identifier', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ identifier: 'test\x00id' }))).toThrow('control characters')
+    })
+
+    it('rejects null byte in name', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ name: 'Test\x00Name' }))).toThrow('control characters')
+    })
+
+    it('rejects null byte in about', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'About\x00text' }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in topics', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ topics: ['valid', 'bad\x01topic'] }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in paymentMethods', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['method\x7f'] }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in pricing capability', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
+        pricing: [{ capability: 'cap\x02', price: 1, currency: 'sats' }],
+      }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in pricing currency', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
+        pricing: [{ capability: 'cap', price: 1, currency: 'sa\x03ts' }],
+      }))).toThrow('control characters')
+    })
+
+    it('allows tabs and newlines in about (display-safe whitespace)', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'Line one\nLine two\ttabbed' }))).not.toThrow()
+    })
+
+    it('allows normal Unicode in all fields', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
+        identifier: 'cafe-\u00E9',
+        name: 'Caf\u00E9 API',
+        about: 'Serves \u2615 and \u{1F370}',
+        topics: ['\u00E9spresso'],
+      }))).not.toThrow()
+    })
+  })
+
+  describe('schema depth limit', () => {
+    it('rejects deeply nested schema (>20 levels)', () => {
+      let nested: Record<string, unknown> = { value: 'leaf' }
+      for (let i = 0; i < 25; i++) {
+        nested = { child: nested }
+      }
+      const config = makeConfig({
+        capabilities: [{ name: 'deep', description: 'desc', schema: nested }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('nesting exceeds maximum depth')
+    })
+
+    it('accepts schema at exactly 20 levels', () => {
+      let nested: Record<string, unknown> = { value: 'leaf' }
+      // capabilities → [0] → schema → 17 more levels = 20 total depth from contentObj
+      for (let i = 0; i < 15; i++) {
+        nested = { child: nested }
+      }
+      const config = makeConfig({
+        capabilities: [{ name: 'ok', description: 'desc', schema: nested }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).not.toThrow()
+    })
+
+    it('zeroes key bytes when depth check fails', () => {
+      let captured: Uint8Array | undefined
+      const orig = utils.hexToBytes
+      vi.spyOn(utils, 'hexToBytes').mockImplementation((hex: string) => {
+        captured = orig(hex)
+        return captured
+      })
+      let nested: Record<string, unknown> = { value: 'leaf' }
+      for (let i = 0; i < 25; i++) {
+        nested = { child: nested }
+      }
+      const config = makeConfig({
+        capabilities: [{ name: 'deep', description: 'desc', schema: nested }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('nesting exceeds maximum depth')
+      vi.restoreAllMocks()
+      expect(captured).toBeDefined()
+      expect(captured!.every(b => b === 0)).toBe(true)
+    })
+  })
+
+  describe('key zeroing when finalizeEvent throws', () => {
+    it('zeroes key bytes even when finalizeEvent throws', async () => {
+      // Mock finalizeEvent at the module level before importing event.ts
+      vi.doMock('nostr-tools/pure', () => ({
+        finalizeEvent: () => { throw new Error('signing failed') },
+      }))
+      vi.resetModules()
+
+      // Re-import utils to spy on hexToBytes in the fresh module graph
+      const freshUtils = await import('../src/utils.js')
+      let captured: Uint8Array | undefined
+      const orig = freshUtils.hexToBytes
+      vi.spyOn(freshUtils, 'hexToBytes').mockImplementation((hex: string) => {
+        captured = orig(hex)
+        return captured
+      })
+
+      const eventModule = await import('../src/event.js')
+      expect(() => eventModule.buildAnnounceEvent(makeSecretKeyHex(), makeConfig())).toThrow('signing failed')
+
+      expect(captured).toBeDefined()
+      expect(captured!.every(b => b === 0)).toBe(true)
+
+      vi.restoreAllMocks()
+      vi.doUnmock('nostr-tools/pure')
+      vi.resetModules()
     })
   })
 })

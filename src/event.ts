@@ -1,6 +1,6 @@
 import { finalizeEvent } from 'nostr-tools/pure'
 import { L402_ANNOUNCE_KIND } from './types.js'
-import { hexToBytes } from './utils.js'
+import { hexToBytes, hasControlChars, jsonDepth } from './utils.js'
 import type { AnnounceConfig } from './types.js'
 import type { VerifiedEvent } from 'nostr-tools/pure'
 
@@ -95,6 +95,9 @@ export function buildAnnounceEvent(
   if (config.identifier.length > 256) {
     throw new Error('config.identifier must not exceed 256 characters')
   }
+  if (hasControlChars(config.identifier)) {
+    throw new Error('config.identifier must not contain control characters')
+  }
 
   // Tag field length limits
   if (config.name.trim().length === 0) {
@@ -103,11 +106,17 @@ export function buildAnnounceEvent(
   if (config.name.length > 256) {
     throw new Error('config.name must not exceed 256 characters')
   }
+  if (hasControlChars(config.name)) {
+    throw new Error('config.name must not contain control characters')
+  }
   if (config.about.trim().length === 0) {
     throw new Error('config.about must not be empty or whitespace-only')
   }
   if (config.about.length > 4096) {
     throw new Error('config.about must not exceed 4096 characters')
+  }
+  if (hasControlChars(config.about)) {
+    throw new Error('config.about must not contain control characters')
   }
   if (config.topics) {
     if (config.topics.length > 50) {
@@ -119,6 +128,9 @@ export function buildAnnounceEvent(
       }
       if (topic.length > 64) {
         throw new Error(`config.topics entry must not exceed 64 characters, got: "${topic.slice(0, 20)}..."`)
+      }
+      if (hasControlChars(topic)) {
+        throw new Error('config.topics entries must not contain control characters')
       }
     }
   }
@@ -136,6 +148,9 @@ export function buildAnnounceEvent(
     }
     if (pm.length > 64) {
       throw new Error(`config.paymentMethods entry must not exceed 64 characters, got: "${pm.slice(0, 20)}..."`)
+    }
+    if (hasControlChars(pm)) {
+      throw new Error('config.paymentMethods entries must not contain control characters')
     }
   }
 
@@ -166,11 +181,17 @@ export function buildAnnounceEvent(
     if (p.capability.length > 64) {
       throw new Error(`config.pricing capability must not exceed 64 characters`)
     }
+    if (hasControlChars(p.capability)) {
+      throw new Error('config.pricing capability must not contain control characters')
+    }
     if (p.currency.trim().length === 0) {
       throw new Error('config.pricing currency must not be empty or whitespace-only')
     }
     if (p.currency.length > 32) {
       throw new Error(`config.pricing currency must not exceed 32 characters`)
+    }
+    if (hasControlChars(p.currency)) {
+      throw new Error('config.pricing currency must not contain control characters')
     }
   }
 
@@ -233,6 +254,12 @@ export function buildAnnounceEvent(
     }
     if (config.version) {
       contentObj.version = config.version
+    }
+
+    // Reject excessively nested schemas that could cause CPU-bound DoS in JSON.stringify
+    const MAX_SCHEMA_DEPTH = 20
+    if (jsonDepth(contentObj, MAX_SCHEMA_DEPTH) > MAX_SCHEMA_DEPTH) {
+      throw new Error(`Event content nesting exceeds maximum depth (${MAX_SCHEMA_DEPTH} levels)`)
     }
 
     let content: string

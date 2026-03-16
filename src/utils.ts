@@ -1,3 +1,32 @@
+/** Regex matching C0 control characters (except tab, newline, carriage return) and DEL. */
+const CONTROL_CHAR_RE = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/
+
+/**
+ * Returns true if the string contains control characters that should not
+ * appear in Nostr event tag values. Tabs, newlines, and carriage returns
+ * are allowed; null bytes and other C0/DEL characters are rejected.
+ */
+export function hasControlChars(s: string): boolean {
+  return CONTROL_CHAR_RE.test(s)
+}
+
+/**
+ * Returns the maximum nesting depth of a value. Plain values are 0,
+ * objects/arrays add 1 per level. Returns Infinity if the structure
+ * exceeds `limit`, short-circuiting the traversal.
+ */
+export function jsonDepth(value: unknown, limit: number): number {
+  if (typeof value !== 'object' || value === null) return 0
+  let max = 0
+  const entries = Array.isArray(value) ? value : Object.values(value)
+  for (const child of entries) {
+    const d = 1 + jsonDepth(child, limit - 1)
+    if (d > limit) return Infinity
+    if (d > max) max = d
+  }
+  return max
+}
+
 export function hexToBytes(hex: string): Uint8Array {
   if (hex.length % 2 !== 0 || !/^[0-9a-f]*$/i.test(hex)) {
     throw new Error('hexToBytes: input must be an even-length hex string')

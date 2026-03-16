@@ -50,13 +50,15 @@ export interface AnnounceConfig {
   version?: string
 }
 
-/** Handle returned by announceService() for cleanup. */
+/** Handle returned by announceService() for cleanup.
+ *  Always call {@link close} when done to disconnect relay WebSockets.
+ *  Failing to call close() will leak open WebSocket connections. */
 export interface Announcement {
   /** Published event ID */
   eventId: string
   /** Nostr pubkey derived from the secret key */
   pubkey: string
-  /** Close relay connections. Synchronous. */
+  /** Close relay connections. Synchronous. Must be called to avoid leaking WebSockets. */
   close(): void
 }
 
