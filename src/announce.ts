@@ -61,18 +61,40 @@ export async function announceService(config: AnnounceConfig): Promise<Announcem
     }
   }
 
-  // Reject private/loopback service URLs — announcing a localhost URL is never useful
-  // to remote clients. (Note: event.ts intentionally allows them for pure serialisation.)
-  try {
-    const serviceUrl = new URL(config.url)
-    if (isPrivateHost(serviceUrl.hostname)) {
-      throw new Error(
-        `Service URL points to a private/loopback address: ${config.url} — use a public URL or set --public-url`,
-      )
+  // Reject events where ALL service URLs are private/loopback — announcing only
+  // localhost URLs is never useful to remote clients. At least one public URL is required.
+  // .onion URLs skip SSRF checks (can't resolve server-side) and count as public.
+  // Non-http/https schemes also skip SSRF checks and count as public.
+  // (Note: event.ts intentionally allows private hosts for pure serialisation.)
+  let hasPublicUrl = false
+  for (const serviceUrlStr of config.urls) {
+    let parsed: URL
+    try {
+      parsed = new URL(serviceUrlStr)
+    } catch {
+      // Already validated by buildAnnounceEvent — should not reach here
+      throw new Error(`Invalid service URL: ${serviceUrlStr}`)
     }
-  } catch (e) {
-    if (e instanceof Error && e.message.includes('private/loopback')) throw e
-    throw new Error(`Invalid service URL: ${config.url}`)
+    const scheme = parsed.protocol // includes trailing colon
+    if (scheme !== 'http:' && scheme !== 'https:') {
+      // Non-http/https schemes (hyper://, .onion via custom schemes, etc.) skip SSRF
+      hasPublicUrl = true
+      continue
+    }
+    const hostname = parsed.hostname
+    if (hostname.endsWith('.onion')) {
+      // .onion addresses cannot be resolved server-side — treat as public
+      hasPublicUrl = true
+      continue
+    }
+    if (!isPrivateHost(hostname)) {
+      hasPublicUrl = true
+    }
+  }
+  if (!hasPublicUrl) {
+    throw new Error(
+      `All service URLs point to private/loopback addresses — use at least one public URL or set --public-url`,
+    )
   }
 
   // Build and sign the event (H2: no redundant key decode — pubkey comes from the event)
