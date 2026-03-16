@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.8.0...v1.9.0) (2026-03-16)
+
+
+### Features
+
+* sticky toolbar with live status, bigger search/pills, distinct section backgrounds ([33aa19d](https://github.com/TheCryptoDonkey/402-announce/commit/33aa19d340c2939bb9118f3e90f42c5f48ad9edd))
+
 # [1.8.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.7.0...v1.8.0) (2026-03-16)
 
 
