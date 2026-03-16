@@ -1,3 +1,12 @@
+# [1.10.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.9.0...v1.10.0) (2026-03-16)
+
+
+### Features
+
+* add Open Graph and Twitter Card meta tags ([ba65cd1](https://github.com/TheCryptoDonkey/402-announce/commit/ba65cd1104a730fa86efeb17b29ae27449dae85d))
+* add SVG favicon — amber lightning bolt ([a218609](https://github.com/TheCryptoDonkey/402-announce/commit/a2186091db3a15085c6ae390fda2b138bde9c22f))
+* mobile polish, expandable cards, health indicators, analytics ([245e920](https://github.com/TheCryptoDonkey/402-announce/commit/245e920b9cd1a63d3579bc307975f8f01d119524))
+
 # [1.9.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.8.0...v1.9.0) (2026-03-16)
 
 
