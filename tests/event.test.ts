@@ -181,6 +181,12 @@ describe('buildAnnounceEvent', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).not.toThrow()
     })
 
+    it('accepts url exactly 2048 characters', () => {
+      const url = 'https://example.com/' + 'a'.repeat(2028)
+      expect(url).toHaveLength(2048)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: [url] }))).not.toThrow()
+    })
+
     it('accepts exactly 10 urls', () => {
       const urls = Array.from({ length: 10 }, (_, i) => `https://example${i}.com`)
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).not.toThrow()

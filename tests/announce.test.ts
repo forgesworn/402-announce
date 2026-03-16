@@ -430,6 +430,13 @@ describe('announceService', () => {
       await expect(announceService(config)).resolves.toBeDefined()
     })
 
+    it('skips SSRF check for non-http/https schemes', async () => {
+      const config = makeConfig({
+        urls: ['hyper://abc123.example'],
+      })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+
     it('allows mix of .onion and private http (onion counts as public)', async () => {
       const config = makeConfig({
         urls: ['http://192.168.1.1/api', 'http://exampleonion123.onion/api'],
