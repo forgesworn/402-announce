@@ -48,7 +48,11 @@
     "mcp",
     "ai-agents",
     "machine-payments",
-    "http-402"
+    "http-402",
+    "bitcoin",
+    "paywall",
+    "micropayments",
+    "decentralised"
   ],
   "homepage": "https://402.pub",
   "repository": {
