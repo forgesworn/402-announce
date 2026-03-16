@@ -794,6 +794,14 @@ describe('buildAnnounceEvent', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('control characters')
     })
 
+    it('rejects control chars in service URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['https://example.com/\x00api'] }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in picture URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'https://example.com/\x7fimg.png' }))).toThrow('control characters')
+    })
+
     it('allows normal Unicode in all fields', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
         identifier: 'cafe-\u00E9',
@@ -812,6 +820,15 @@ describe('buildAnnounceEvent', () => {
       }
       const config = makeConfig({
         capabilities: [{ name: 'deep', description: 'desc', schema: nested }],
+      })
+      expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('nesting exceeds maximum depth')
+    })
+
+    it('rejects pure self-referential schema without stack overflow', () => {
+      const selfRef: Record<string, unknown> = {}
+      selfRef.self = selfRef
+      const config = makeConfig({
+        capabilities: [{ name: 'loop', description: 'desc', schema: selfRef }],
       })
       expect(() => buildAnnounceEvent(config.secretKey, config)).toThrow('nesting exceeds maximum depth')
     })

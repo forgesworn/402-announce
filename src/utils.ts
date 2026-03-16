@@ -17,6 +17,7 @@ export function hasControlChars(s: string): boolean {
  */
 export function jsonDepth(value: unknown, limit: number): number {
   if (typeof value !== 'object' || value === null) return 0
+  if (limit <= 0) return Infinity
   let max = 0
   const entries = Array.isArray(value) ? value : Object.values(value)
   for (const child of entries) {

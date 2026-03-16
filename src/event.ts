@@ -71,6 +71,9 @@ export function buildAnnounceEvent(
     if (DENIED_URL_SCHEMES.has(parsed.protocol)) {
       throw new Error(`config.urls entry uses a disallowed scheme: ${parsed.protocol}`)
     }
+    if (hasControlChars(u)) {
+      throw new Error('config.urls entry must not contain control characters')
+    }
     if (seenUrls.has(u)) {
       throw new Error('config.urls must not contain duplicate entries')
     }
@@ -85,6 +88,9 @@ export function buildAnnounceEvent(
     }
     if (config.picture.length > 2048) {
       throw new Error('config.picture must not exceed 2048 characters')
+    }
+    if (hasControlChars(config.picture)) {
+      throw new Error('config.picture must not contain control characters')
     }
   }
 
