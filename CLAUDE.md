@@ -37,3 +37,16 @@ tests/
 - **Strict TypeScript** — no `any`, no implicit returns
 - **Git:** commit messages use `type: description` format
 - **Git:** Do NOT include `Co-Authored-By` lines in commits
+
+## Release & Versioning
+
+**Automated via semantic-release** — version bumps and npm publishing happen automatically when you push to `main`.
+
+| Type | Version Bump |
+|------|--------------|
+| `fix:` | Patch (1.0.x) |
+| `feat:` | Minor (1.x.0) |
+| `BREAKING CHANGE:` (in commit body) | Major (x.0.0) |
+| `chore:`, `docs:`, `refactor:` | None |
+
+Tests must pass before release. GitHub Actions uses OIDC trusted publishing.
