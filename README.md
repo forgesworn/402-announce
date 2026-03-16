@@ -2,6 +2,7 @@
 
 Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L402 and x402 payment protocols.
 
+[![CI](https://github.com/TheCryptoDonkey/402-announce/actions/workflows/ci.yml/badge.svg)](https://github.com/TheCryptoDonkey/402-announce/actions/workflows/ci.yml)
 [![MIT Licence](https://img.shields.io/badge/licence-MIT-blue.svg)](./LICENSE)
 
 Publishes **kind 31402** parameterised replaceable events so that AI agents (and any Nostr client) can discover paid APIs without a central registry.
