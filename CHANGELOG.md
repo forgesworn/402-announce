@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.4.1...v1.5.0) (2026-03-16)
+
+
+### Features
+
+* redesign dashboard — dark refined editorial aesthetic ([d124b0f](https://github.com/TheCryptoDonkey/402-announce/commit/d124b0f008d0fd979754a38c9c03b76fcdae128d))
+
 ## [1.4.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.4.0...v1.4.1) (2026-03-16)
 
 
