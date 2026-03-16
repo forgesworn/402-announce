@@ -408,6 +408,9 @@ function renderServices() {
       })
     })
   })
+
+  // Kick off async health checks for all visible service cards
+  updateHealthDots()
 }
 
 /**
@@ -446,6 +449,12 @@ function buildCard(s) {
     headerLeft.appendChild(img)
   }
 
+  // Health status dot
+  const healthDot = document.createElement('span')
+  healthDot.className = 'health-dot health-unknown'
+  healthDot.title = 'Checking...'
+  headerLeft.appendChild(healthDot)
+
   const nameEl = document.createElement('a')
   nameEl.href = s.url
   nameEl.target = '_blank'
@@ -483,21 +492,26 @@ function buildCard(s) {
   urlLink.textContent = s.url
   article.appendChild(urlLink)
 
-  // --- About ---
+  // --- About (expandable on click) ---
   if (s.about) {
     const about = document.createElement('p')
     about.className = 'service-about'
     about.textContent = s.about
+    about.addEventListener('click', () => about.classList.toggle('expanded'))
     article.appendChild(about)
   }
 
-  // --- Pricing chips ---
+  // --- Pricing chips (collapse to 3 visible, "+N more" overflow) ---
   if (s.pricing.length > 0) {
     const pricingRow = document.createElement('div')
     pricingRow.className = 'pricing-row'
     pricingRow.setAttribute('aria-label', 'Pricing')
 
-    s.pricing.forEach(p => {
+    const MAX_VISIBLE = 3
+    const visiblePricing = s.pricing.slice(0, MAX_VISIBLE)
+    const hiddenPricing = s.pricing.slice(MAX_VISIBLE)
+
+    const buildChip = (p) => {
       const chip = document.createElement('span')
       chip.className = 'pricing-chip'
 
@@ -516,8 +530,21 @@ function buildCard(s) {
       chip.appendChild(capName)
       chip.appendChild(sep)
       chip.appendChild(capPrice)
-      pricingRow.appendChild(chip)
-    })
+      return chip
+    }
+
+    visiblePricing.forEach(p => pricingRow.appendChild(buildChip(p)))
+
+    if (hiddenPricing.length > 0) {
+      const overflow = document.createElement('span')
+      overflow.className = 'pricing-overflow'
+      overflow.textContent = '+' + hiddenPricing.length + ' more'
+      overflow.addEventListener('click', () => {
+        hiddenPricing.forEach(p => pricingRow.insertBefore(buildChip(p), overflow))
+        overflow.remove()
+      })
+      pricingRow.appendChild(overflow)
+    }
 
     article.appendChild(pricingRow)
   }
@@ -962,6 +989,68 @@ function checkAllDown() {
 }
 
 setInterval(checkAllDown, 5000)
+
+/* ============================================================
+   Service Health Checks — Async HEAD Requests
+   ============================================================ */
+
+/** Cache of health check results: url → { up: boolean, checkedAt: number } */
+const healthCache = new Map()
+
+/** Health check timeout in milliseconds */
+const HEALTH_TIMEOUT = 8000
+
+/** Re-check interval: 5 minutes */
+const HEALTH_RECHECK = 300_000
+
+/**
+ * Checks whether a service URL responds. Uses a no-cors fetch
+ * (opaque response) since most APIs won't have CORS headers.
+ * An opaque response still confirms the server is listening.
+ *
+ * @param {string} url - Service URL to check
+ * @returns {Promise<boolean>} Whether the service responded
+ */
+async function checkServiceHealth(url) {
+  const cached = healthCache.get(url)
+  if (cached && Date.now() - cached.checkedAt < HEALTH_RECHECK) {
+    return cached.up
+  }
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), HEALTH_TIMEOUT)
+    await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal })
+    clearTimeout(timeout)
+    healthCache.set(url, { up: true, checkedAt: Date.now() })
+    return true
+  } catch {
+    healthCache.set(url, { up: false, checkedAt: Date.now() })
+    return false
+  }
+}
+
+/**
+ * Updates all health dots currently in the DOM. Called after
+ * services are rendered. Runs checks in parallel with a small
+ * stagger to avoid thundering herd.
+ */
+function updateHealthDots() {
+  const dots = document.querySelectorAll('.health-dot')
+  dots.forEach((dot, i) => {
+    const card = dot.closest('.service-card')
+    if (!card) return
+    const urlEl = card.querySelector('.service-url')
+    if (!urlEl) return
+    const url = urlEl.href
+
+    setTimeout(async () => {
+      const up = await checkServiceHealth(url)
+      dot.className = 'health-dot ' + (up ? 'health-up' : 'health-down')
+      dot.title = up ? 'Responding' : 'Not responding'
+    }, i * 200) // Stagger by 200ms per service
+  })
+}
 
 /* ============================================================
    Initialise

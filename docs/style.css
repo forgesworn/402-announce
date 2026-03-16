@@ -819,7 +819,7 @@ main {
   color: var(--accent-blue);
 }
 
-/* Description */
+/* Description — expandable */
 .service-about {
   font-size: 0.95rem;
   color: var(--text-secondary);
@@ -829,18 +829,66 @@ main {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* ============================================================
-   Pricing Chips — Horizontal Inline List
-   ============================================================ */
+.service-about.expanded {
+  -webkit-line-clamp: unset;
+  display: block;
+}
 
+/* Health status dot in card header */
+.health-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color 0.3s;
+}
+
+.health-dot.health-unknown {
+  background: var(--text-muted);
+}
+
+.health-dot.health-up {
+  background: var(--colour-success);
+  box-shadow: 0 0 5px rgba(34, 197, 94, 0.4);
+}
+
+.health-dot.health-down {
+  background: var(--colour-error);
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+}
+
+/* Pricing row — collapsible when many */
 .pricing-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
+
+.pricing-overflow {
+  font-size: 0.78rem;
+  font-family: var(--font-code);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem 0.7rem;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.pricing-overflow:hover {
+  color: var(--accent-amber);
+  border-color: var(--accent-amber-dim);
+}
+
+/* ============================================================
+   Pricing Chips — Horizontal Inline List
+   ============================================================ */
 
 .pricing-chip {
   display: inline-flex;
@@ -1336,6 +1384,23 @@ footer a:hover {
   .card-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .pricing-chip {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .pricing-chip .cap-name {
+    max-width: 18ch;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    justify-content: center;
   }
 
   .trust-badges {
