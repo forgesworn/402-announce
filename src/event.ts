@@ -162,6 +162,9 @@ export function buildAnnounceEvent(
     if (config.version.length > 64) {
       throw new Error('config.version must not exceed 64 characters')
     }
+    if (hasControlChars(config.version)) {
+      throw new Error('config.version must not contain control characters')
+    }
   }
 
   // M3: Validate all pricing entries
@@ -234,8 +237,14 @@ export function buildAnnounceEvent(
         if (cap.name.length > 128) {
           throw new Error('config.capabilities name must not exceed 128 characters')
         }
+        if (hasControlChars(cap.name)) {
+          throw new Error('config.capabilities name must not contain control characters')
+        }
         if (cap.description.length > 4096) {
           throw new Error('config.capabilities description must not exceed 4096 characters')
+        }
+        if (hasControlChars(cap.description)) {
+          throw new Error('config.capabilities description must not contain control characters')
         }
         if (cap.endpoint !== undefined) {
           if (typeof cap.endpoint !== 'string' || cap.endpoint.trim().length === 0) {

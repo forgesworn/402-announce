@@ -780,6 +780,20 @@ describe('buildAnnounceEvent', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ about: 'Line one\nLine two\ttabbed' }))).not.toThrow()
     })
 
+    it('rejects control chars in version', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ version: '1.0\x00.0' }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in capabilities name', () => {
+      const capabilities = [{ name: 'cap\x01name', description: 'desc' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('control characters')
+    })
+
+    it('rejects control chars in capabilities description', () => {
+      const capabilities = [{ name: 'cap', description: 'desc\x7f' }]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ capabilities }))).toThrow('control characters')
+    })
+
     it('allows normal Unicode in all fields', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
         identifier: 'cafe-\u00E9',
