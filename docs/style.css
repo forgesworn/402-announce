@@ -314,6 +314,155 @@ header h1::after {
 }
 
 /* ============================================================
+   Dual Audience Section
+   ============================================================ */
+
+.audience-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.audience-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.audience-dev {
+  border-left-color: var(--accent-amber);
+}
+
+.audience-agent {
+  border-left-color: var(--accent-blue);
+}
+
+.audience-card h2 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.audience-intro {
+  color: var(--text-secondary);
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.audience-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.audience-benefits li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.audience-benefits li::before {
+  content: '\2014';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+.audience-card pre {
+  margin: 0 0 1rem;
+}
+
+.audience-card code {
+  display: block;
+  background: #0d0d14;
+  color: #c4c4d0;
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  font-family: var(--font-code);
+  white-space: pre;
+}
+
+.audience-links {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.audience-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.audience-links a:hover {
+  border-color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
+}
+
+/* --- Tabs (WAI-ARIA compliant) --- */
+
+.audience-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid var(--border-medium);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.tab:hover {
+  border-color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab.active {
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+  color: #0a0a0f;
+  font-weight: 500;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================
    Relay Status — Horizontal Bar with Pulsing Dots
    ============================================================ */
 
@@ -1010,6 +1159,10 @@ footer a:hover {
   header h1 {
     font-size: 2.2rem;
   }
+
+  .audience-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============================================================
@@ -1104,6 +1257,15 @@ footer a:hover {
 
   .btn {
     justify-content: center;
+  }
+
+  .audience-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .audience-card code {
+    font-size: 0.72rem;
+    padding: 1rem;
   }
 }
 

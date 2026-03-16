@@ -34,6 +34,64 @@
   </header>
 
   <main>
+    <section class="audience-section">
+      <div class="audience-card audience-dev">
+        <h2>For Developers</h2>
+        <p class="audience-intro">Browse the grid below, or test any API from your terminal.</p>
+        <ul class="audience-benefits">
+          <li>Pay-per-request with Lightning</li>
+          <li>No accounts or API keys</li>
+          <li>Standard HTTP + L402 flow</li>
+        </ul>
+        <pre><code># Try any 402 API — you'll get an invoice back
+curl -i https://satgate.trotters.dev/v1/chat/completions \
+  -H "Accept: application/json"
+# Pay the Lightning invoice, use the L402 token</code></pre>
+        <div class="audience-links">
+          <a href="https://www.npmjs.com/package/402-announce">402-announce on npm</a>
+          <a href="https://github.com/TheCryptoDonkey/402-announce">GitHub</a>
+        </div>
+      </div>
+
+      <div class="audience-card audience-agent">
+        <h2>For AI Agents</h2>
+        <p class="audience-intro">Give your agent access to every 402 service with one config line.</p>
+        <ul class="audience-benefits">
+          <li>Auto-discover via Nostr</li>
+          <li>Auto-pay via Lightning</li>
+          <li>No approval process</li>
+        </ul>
+        <div class="audience-tabs" role="tablist" aria-label="Agent integration method">
+          <button role="tab" id="tab-mcp" aria-selected="true" aria-controls="panel-mcp" class="tab active">MCP</button>
+          <button role="tab" id="tab-nostr" aria-selected="false" aria-controls="panel-nostr" class="tab">Nostr</button>
+        </div>
+        <div id="panel-mcp" role="tabpanel" aria-labelledby="tab-mcp">
+          <pre><code>{
+  "mcpServers": {
+    "402-mcp": {
+      "command": "npx",
+      "args": ["402-mcp"]
+    }
+  }
+}</code></pre>
+        </div>
+        <div id="panel-nostr" role="tabpanel" aria-labelledby="tab-nostr" hidden>
+          <pre><code>// Subscribe to kind 31402 on any relay
+const ws = new WebSocket('wss://relay.damus.io')
+ws.onopen = () =>
+  ws.send(JSON.stringify(['REQ', 'discover', { kinds: [31402] }]))
+ws.onmessage = (e) => {
+  const [type, , event] = JSON.parse(e.data)
+  if (type === 'EVENT') console.log(event)
+}</code></pre>
+        </div>
+        <div class="audience-links">
+          <a href="https://www.npmjs.com/package/402-mcp">402-mcp on npm</a>
+          <a href="https://github.com/TheCryptoDonkey/402-mcp">GitHub</a>
+        </div>
+      </div>
+    </section>
+
     <section id="filters" class="filters" aria-label="Filter services">
       <label for="search" class="sr-only">Search services</label>
       <input type="search" id="search" placeholder="Search services..." autocomplete="off" aria-label="Search services">

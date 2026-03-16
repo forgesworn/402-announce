@@ -862,6 +862,48 @@ document.addEventListener('click', (e) => {
   target.scrollIntoView({ behavior: behaviour })
 })
 
+// Tab switching for audience-agent code panels
+document.addEventListener('click', (e) => {
+  const tab = e.target.closest('.audience-tabs [role="tab"]')
+  if (!tab) return
+
+  const tablist = tab.closest('[role="tablist"]')
+  if (!tablist) return
+
+  // Deactivate all tabs in this group
+  tablist.querySelectorAll('[role="tab"]').forEach(t => {
+    t.classList.remove('active')
+    t.setAttribute('aria-selected', 'false')
+    const panel = document.getElementById(t.getAttribute('aria-controls'))
+    if (panel) panel.hidden = true
+  })
+
+  // Activate clicked tab
+  tab.classList.add('active')
+  tab.setAttribute('aria-selected', 'true')
+  const panel = document.getElementById(tab.getAttribute('aria-controls'))
+  if (panel) panel.hidden = false
+})
+
+// Arrow key navigation between tabs (WAI-ARIA Tabs pattern)
+document.addEventListener('keydown', (e) => {
+  const tab = e.target.closest('.audience-tabs [role="tab"]')
+  if (!tab) return
+
+  const tabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')]
+  const idx = tabs.indexOf(tab)
+  let next
+
+  if (e.key === 'ArrowRight') next = tabs[(idx + 1) % tabs.length]
+  else if (e.key === 'ArrowLeft') next = tabs[(idx - 1 + tabs.length) % tabs.length]
+
+  if (next) {
+    e.preventDefault()
+    next.focus()
+    next.click()
+  }
+})
+
 /* ============================================================
    Health Check — All Relays Down Banner
    ============================================================ */
