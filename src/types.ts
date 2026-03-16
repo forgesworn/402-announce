@@ -30,8 +30,8 @@ export interface AnnounceConfig {
   identifier: string
   /** Human-readable service name */
   name: string
-  /** HTTP URL where the L402 service is accessible */
-  url: string
+  /** Transport endpoint URLs (1-10, each max 2048 characters). */
+  urls: string[]
   /** Short description of what the service does */
   about: string
   /** Optional icon URL */
