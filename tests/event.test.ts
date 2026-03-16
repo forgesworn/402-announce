@@ -16,7 +16,7 @@ function makeConfig(overrides: Partial<AnnounceConfig> = {}): Omit<AnnounceConfi
     secretKey: makeSecretKeyHex(),
     identifier: 'jokes-api',
     name: 'Jokes API',
-    url: 'https://jokes.example.com',
+    urls: ['https://jokes.example.com'],
     about: 'A joke-telling service',
     pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
     paymentMethods: ['bitcoin-lightning-bolt11'],
@@ -143,22 +143,56 @@ describe('buildAnnounceEvent', () => {
     expect(() => buildAnnounceEvent('ab'.repeat(16), baseConfig)).toThrow('64-character hex')
   })
 
-  describe('url validation (M1)', () => {
-    it('accepts http:// and https:// urls', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://example.com' }))).not.toThrow()
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'http://example.com' }))).not.toThrow()
+  describe('urls validation (M1)', () => {
+    it('rejects empty urls array', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: [] }))).toThrow('config.urls must contain at least one entry')
     })
 
-    it('rejects javascript: url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'javascript:alert(1)' }))).toThrow('config.url must start with http')
+    it('rejects more than 10 urls', () => {
+      const urls = Array.from({ length: 11 }, (_, i) => `https://example${i}.com`)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).toThrow('config.urls must not exceed 10 entries')
     })
 
-    it('rejects empty string url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: '' }))).toThrow('config.url must start with http')
+    it('rejects duplicate urls', () => {
+      const urls = ['https://example.com', 'https://example.com']
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).toThrow('config.urls must not contain duplicate entries')
     })
 
-    it('rejects ftp:// url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'ftp://example.com' }))).toThrow('config.url must start with http')
+    it('rejects unparseable urls', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['not a url'] }))).toThrow('config.urls entry is not a valid URL')
+    })
+
+    it('rejects url longer than 2048 characters', () => {
+      const longUrl = 'https://example.com/' + 'a'.repeat(2030)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: [longUrl] }))).toThrow('config.urls entry must not exceed 2048 characters')
+    })
+
+    it('accepts multiple valid urls (clearnet, .onion, HNS)', () => {
+      const urls = [
+        'https://example.com',
+        'http://exampleonion.onion/api',
+        'https://example.hns',
+      ]
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).not.toThrow()
+    })
+
+    it('accepts exotic schemes (hyper://)', () => {
+      const urls = ['hyper://abc123.example']
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).not.toThrow()
+    })
+
+    it('accepts exactly 10 urls', () => {
+      const urls = Array.from({ length: 10 }, (_, i) => `https://example${i}.com`)
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))).not.toThrow()
+    })
+
+    it('emits one url tag per entry', () => {
+      const urls = ['https://example.com', 'http://example2.com']
+      const event = buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls }))
+      const urlTags = event.tags.filter(t => t[0] === 'url')
+      expect(urlTags).toHaveLength(2)
+      expect(urlTags[0]).toEqual(['url', 'https://example.com'])
+      expect(urlTags[1]).toEqual(['url', 'http://example2.com'])
     })
   })
 
@@ -186,13 +220,13 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
-  describe('url allows private hosts (no network I/O)', () => {
+  describe('urls allow private hosts (no network I/O)', () => {
     it('accepts localhost url in buildAnnounceEvent', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://localhost:3000/api' }))).not.toThrow()
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['https://localhost:3000/api'] }))).not.toThrow()
     })
 
     it('accepts private IP url in buildAnnounceEvent', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'https://192.168.1.1/api' }))).not.toThrow()
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['https://192.168.1.1/api'] }))).not.toThrow()
     })
 
     it('accepts private picture url in buildAnnounceEvent', () => {
@@ -492,28 +526,14 @@ describe('buildAnnounceEvent', () => {
     })
   })
 
-  describe('url and picture length limits', () => {
-    it('rejects url longer than 2048 characters', () => {
-      const longUrl = 'https://example.com/' + 'a'.repeat(2030)
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: longUrl }))).toThrow('must not exceed 2048')
-    })
-
-    it('accepts url exactly 2048 characters', () => {
-      const url = 'https://example.com/' + 'a'.repeat(2028)
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url }))).not.toThrow()
-    })
-
+  describe('picture length limit', () => {
     it('rejects picture longer than 2048 characters', () => {
       const longPic = 'https://example.com/' + 'a'.repeat(2030)
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: longPic }))).toThrow('must not exceed 2048')
     })
 
-    it('accepts uppercase HTTP:// url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'HTTP://example.com' }))).not.toThrow()
-    })
-
-    it('accepts uppercase HTTPS:// url', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ url: 'HTTPS://example.com' }))).not.toThrow()
+    it('accepts uppercase HTTP:// picture', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ picture: 'HTTP://example.com/img.png' }))).not.toThrow()
     })
 
     it('accepts uppercase HTTPS:// picture', () => {

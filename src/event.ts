@@ -22,14 +22,28 @@ export function buildAnnounceEvent(
     throw new Error('secretKey must be a 64-character hex string')
   }
 
-  // M1: Validate url field (scheme only — this function serialises the URL
+  // M1: Validate urls array (scheme-agnostic — this function serialises URLs
   // into event tags without performing network I/O, so private hosts are allowed)
-  const urlLower = config.url.toLowerCase()
-  if (!urlLower.startsWith('http://') && !urlLower.startsWith('https://')) {
-    throw new Error('config.url must start with http:// or https://')
+  if (config.urls.length === 0) {
+    throw new Error('config.urls must contain at least one entry')
   }
-  if (config.url.length > 2048) {
-    throw new Error('config.url must not exceed 2048 characters')
+  if (config.urls.length > 10) {
+    throw new Error('config.urls must not exceed 10 entries')
+  }
+  const seenUrls = new Set<string>()
+  for (const u of config.urls) {
+    if (u.length > 2048) {
+      throw new Error('config.urls entry must not exceed 2048 characters')
+    }
+    try {
+      new URL(u)
+    } catch {
+      throw new Error(`config.urls entry is not a valid URL: ${u}`)
+    }
+    if (seenUrls.has(u)) {
+      throw new Error('config.urls must not contain duplicate entries')
+    }
+    seenUrls.add(u)
   }
 
   // M1: Validate picture field when present
@@ -126,7 +140,7 @@ export function buildAnnounceEvent(
     const tags: string[][] = [
       ['d', config.identifier],
       ['name', config.name],
-      ['url', config.url],
+      ...config.urls.map(u => ['url', u]),
       ['about', config.about],
     ]
 
