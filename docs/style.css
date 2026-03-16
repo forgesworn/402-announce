@@ -21,8 +21,8 @@
   --accent-blue: #3b82f6;
   --accent-blue-dim: rgba(59, 130, 246, 0.12);
   --accent-blue-glow: rgba(59, 130, 246, 0.25);
-  --text-primary: #e8e8ed;
-  --text-secondary: #7a7a8a;
+  --text-primary: #f0f0f5;
+  --text-secondary: #a0a0b0;
   --text-muted: #55556a;
   --colour-success: #22c55e;
   --colour-warning: #f59e0b;
@@ -367,9 +367,9 @@ main {
    ============================================================ */
 
 .services-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   margin-top: 2rem;
 }
 
@@ -379,17 +379,22 @@ main {
 
 .service-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  padding: 1.25rem 1.75rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.5rem 2rem;
+  transition: background 0.2s;
   position: relative;
   /* Staggered entrance animation */
   opacity: 0;
   animation: cardEntrance 0.5s ease forwards;
+}
+
+.service-card:first-child {
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* Stagger card animation using nth-child */
@@ -418,13 +423,9 @@ main {
   }
 }
 
-/* Hover glow effect */
+/* Hover highlight */
 .service-card:hover {
-  border-color: rgba(245, 158, 11, 0.2);
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.3),
-    0 0 40px rgba(245, 158, 11, 0.06);
-  transform: translateY(-2px);
+  background: var(--bg-surface-hover);
 }
 
 .card-header {
@@ -445,7 +446,7 @@ main {
 
 .service-name {
   font-family: var(--font-heading);
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
@@ -460,7 +461,7 @@ main {
 }
 
 .service-about {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.55;
@@ -477,7 +478,7 @@ main {
 .pricing-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   border-left: 2px solid var(--accent-amber);
   margin-left: 2px;
 }
@@ -792,8 +793,8 @@ footer a:hover {
    ============================================================ */
 
 @media (max-width: 1024px) {
-  .services-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .service-card {
+    grid-template-columns: 1fr;
   }
 
   header h1 {
@@ -822,13 +823,8 @@ footer a:hover {
     padding: 1.25rem;
   }
 
-  .services-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
   .service-card {
-    padding: 1.25rem;
+    padding: 1rem 1.25rem;
   }
 
   .filters {
