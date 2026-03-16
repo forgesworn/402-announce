@@ -136,6 +136,9 @@ function connectAll() {
  */
 const services = new Map()
 
+/** Keys of services that were just added (not updated). Cleared after render. */
+const newlyAddedKeys = new Set()
+
 /** Number of relays that have sent EOSE — used to hide the loading indicator. */
 let eoseCount = 0
 
@@ -179,6 +182,9 @@ function handleEvent(event) {
   const key = event.pubkey + ':' + dTag
   const existing = services.get(key)
   if (existing && existing.createdAt >= event.created_at) return
+
+  // Track genuinely new services (not updates to existing ones)
+  if (!existing) newlyAddedKeys.add(key)
 
   // Parse pricing tags: ['price', capability, amount, currency]
   const pricing = getTags('price').map(t => ({
@@ -340,15 +346,22 @@ function renderServices() {
   // Sort by most recently announced first
   filtered.sort((a, b) => b.createdAt - a.createdAt)
 
-  // Update service count in header
+  // Update service count in header (with bounce animation on change)
   const nostrCount = allServices.filter(s => s.source === 'nostr').length
   const indexedCount = allServices.length - nostrCount
   const parts = []
   if (nostrCount > 0) parts.push(nostrCount + ' self-announced')
   if (indexedCount > 0) parts.push(indexedCount + ' indexed')
-  document.getElementById('service-count').textContent =
+  const countEl = document.getElementById('service-count')
+  const newText =
     allServices.length + ' service' + (allServices.length !== 1 ? 's' : '') +
     (parts.length > 0 ? ' (' + parts.join(', ') + ')' : '')
+
+  if (countEl.textContent !== newText) {
+    countEl.textContent = newText
+    countEl.classList.add('count-updated')
+    setTimeout(() => countEl.classList.remove('count-updated'), 350)
+  }
 
   // Show empty state if filters produced no results but services exist
   if (filtered.length === 0 && allServices.length > 0) {
@@ -362,8 +375,23 @@ function renderServices() {
   // Build cards via safe DOM fragment
   const fragment = document.createDocumentFragment()
   filtered.forEach(s => {
-    fragment.appendChild(buildCard(s))
+    const card = buildCard(s)
+
+    // Flash new services (from Nostr or external sources)
+    const key = s.pubkey + ':' + s.identifier
+    const extKey = 'ext:' + s.source + ':' + s.identifier
+    if (newlyAddedKeys.has(key) || newlyAddedKeys.has(extKey)) {
+      card.classList.add('service-new')
+      // Remove class after animation completes so hover styles work normally
+      setTimeout(() => card.classList.remove('service-new'), 3000)
+    }
+
+    fragment.appendChild(card)
   })
+
+  // Clear newly-added tracking after render
+  newlyAddedKeys.clear()
+
   grid.textContent = ''
   grid.appendChild(fragment)
 
@@ -651,6 +679,7 @@ async function fetchExternalSources() {
           if (existingByUrl) return
 
           const key = 'ext:' + src.name + ':' + svc.identifier
+          if (!services.has(key)) newlyAddedKeys.add(key)
           services.set(key, svc)
           added++
         })
@@ -800,3 +829,122 @@ setInterval(checkAllDown, 5000)
 
 connectAll()
 fetchExternalSources()
+
+/* ============================================================
+   Particle Network — Ambient Background Animation
+   ============================================================ */
+
+;(function particleNetwork() {
+  const canvas = document.getElementById('particle-canvas')
+  if (!canvas) return
+
+  const ctx = canvas.getContext('2d')
+  const PARTICLE_COUNT = 40
+  const CONNECTION_DISTANCE = 150
+  const PARTICLE_COLOUR = 'rgba(245, 158, 11, 0.15)'
+  const LINE_COLOUR = 'rgba(245, 158, 11, 0.05)'
+  const TARGET_FPS = 30
+  const FRAME_INTERVAL = 1000 / TARGET_FPS
+
+  let particles = []
+  let lastFrame = 0
+  let animId = null
+  let paused = false
+
+  function resize() {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  }
+
+  function createParticles() {
+    particles = []
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        radius: Math.random() * 1.5 + 0.8,
+      })
+    }
+  }
+
+  function tick(timestamp) {
+    animId = requestAnimationFrame(tick)
+
+    if (paused) return
+
+    // Throttle to ~30 fps
+    const delta = timestamp - lastFrame
+    if (delta < FRAME_INTERVAL) return
+    lastFrame = timestamp - (delta % FRAME_INTERVAL)
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Update positions
+    for (const p of particles) {
+      p.x += p.vx
+      p.y += p.vy
+
+      // Wrap around edges
+      if (p.x < 0) p.x = canvas.width
+      if (p.x > canvas.width) p.x = 0
+      if (p.y < 0) p.y = canvas.height
+      if (p.y > canvas.height) p.y = 0
+    }
+
+    // Draw connection lines
+    ctx.strokeStyle = LINE_COLOUR
+    ctx.lineWidth = 1
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x
+        const dy = particles[i].y - particles[j].y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < CONNECTION_DISTANCE) {
+          ctx.globalAlpha = 1 - (dist / CONNECTION_DISTANCE)
+          ctx.beginPath()
+          ctx.moveTo(particles[i].x, particles[i].y)
+          ctx.lineTo(particles[j].x, particles[j].y)
+          ctx.stroke()
+        }
+      }
+    }
+
+    // Draw particles
+    ctx.globalAlpha = 1
+    ctx.fillStyle = PARTICLE_COLOUR
+    for (const p of particles) {
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  // Pause when tab is not visible
+  document.addEventListener('visibilitychange', () => {
+    paused = document.hidden
+  })
+
+  // Respect prefers-reduced-motion
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  function handleMotionPref() {
+    if (motionQuery.matches) {
+      paused = true
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    } else {
+      paused = document.hidden
+    }
+  }
+  motionQuery.addEventListener('change', handleMotionPref)
+  handleMotionPref()
+
+  window.addEventListener('resize', () => {
+    resize()
+    createParticles()
+  })
+
+  resize()
+  createParticles()
+  animId = requestAnimationFrame(tick)
+})()
