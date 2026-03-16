@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.5.0...v1.6.0) (2026-03-16)
+
+
+### Features
+
+* switch to row layout, larger text, better contrast ([45fda00](https://github.com/TheCryptoDonkey/402-announce/commit/45fda00476aeda264a8a2862c33b150881a8bb12))
+
 # [1.5.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.4.1...v1.5.0) (2026-03-16)
 
 
