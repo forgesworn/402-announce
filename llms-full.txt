@@ -31,7 +31,7 @@ AnnounceConfig:
   - relays (string[], required): Relay URLs (must start with wss:// or ws://)
   - identifier (string, required): Unique listing ID, used as the Nostr `d` tag. Same pubkey + identifier = same listing.
   - name (string, required): Human-readable service name
-  - url (string, required): HTTP endpoint where the 402 service is accessible
+  - urls (string[], required): Transport endpoint URLs (1–10 entries, each max 2048 characters)
   - about (string, required): Short description of the service
   - pricing (PricingDef[], required): Per-capability pricing. Each entry: { capability, price, currency }
   - paymentMethods (string[], required): Accepted payment method identifiers
@@ -172,7 +172,7 @@ const handle = await announceService({
   relays: ['wss://relay.damus.io'],
   identifier: 'my-api',
   name: 'My API',
-  url: 'https://api.example.com',
+  urls: ['https://api.example.com'],
   about: 'A paid API service',
   pricing: [{ capability: 'query', price: 10, currency: 'sats' }],
   paymentMethods: ['bitcoin-lightning-bolt11'],

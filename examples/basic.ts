@@ -27,7 +27,7 @@ const handle = await announceService({
   identifier: 'weather-api',
 
   name: 'Weather API',
-  url: 'https://weather.example.com/api',
+  urls: ['https://weather.example.com/api'],
   about: 'Real-time weather data behind an L402 paywall',
 
   // Per-capability pricing

@@ -27,7 +27,7 @@ const event = buildAnnounceEvent(NOSTR_SECRET_KEY, {
   secretKey: NOSTR_SECRET_KEY,
   identifier: 'translation-api',
   name: 'Translation API',
-  url: 'https://translate.example.com/api',
+  urls: ['https://translate.example.com/api'],
   about: 'Machine translation behind an L402 paywall',
   pricing: [
     { capability: 'translate', price: 2, currency: 'sats' },
