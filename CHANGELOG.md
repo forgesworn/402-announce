@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.11.0...v1.11.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* harden input validation and SSRF prevention ([293a652](https://github.com/TheCryptoDonkey/402-announce/commit/293a65267bd860b43f5db3f03e01ebc1e50b3e62))
+
 # [1.11.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.10.0...v1.11.0) (2026-03-16)
 
 
