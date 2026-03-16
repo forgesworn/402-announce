@@ -13,6 +13,19 @@
     <div class="header-content">
       <h1>Discover Paid APIs</h1>
       <p class="subtitle">Live services announcing on the Nostr network via <a href="https://github.com/TheCryptoDonkey/402-announce">kind 31402</a></p>
+
+      <div class="trust-badges">
+        <span class="trust-badge">No registry</span>
+        <span class="trust-badge">No API keys</span>
+        <span class="trust-badge">No gatekeepers</span>
+        <span class="trust-badge">Lightning native</span>
+      </div>
+
+      <div class="hero-ctas">
+        <a href="#filters" class="btn btn-primary" id="browse-cta">Browse APIs</a>
+        <a href="#announce" class="btn btn-secondary" id="announce-cta">Announce yours</a>
+      </div>
+
       <div class="stats">
         <span id="service-count">0 services</span> found across <span id="relay-count">0 relays</span>
       </div>
@@ -21,7 +34,7 @@
   </header>
 
   <main>
-    <section class="filters" aria-label="Filter services">
+    <section id="filters" class="filters" aria-label="Filter services">
       <label for="search" class="sr-only">Search services</label>
       <input type="search" id="search" placeholder="Search services..." autocomplete="off" aria-label="Search services">
       <div id="payment-filters" class="filter-pills" role="group" aria-label="Filter by payment method"></div>
@@ -36,7 +49,7 @@
       <p>No services match your filters.</p>
     </section>
 
-    <section class="announce-cta">
+    <section id="announce" class="announce-cta">
       <h2>Announce Your Own API</h2>
       <p>Get your API listed here. Announce it on Nostr in 10 lines of code.</p>
       <pre><code>import { announceService } from '402-announce'

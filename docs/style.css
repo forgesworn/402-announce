@@ -227,6 +227,83 @@ header h1::after {
   color: var(--accent-amber);
 }
 
+/* ============================================================
+   Trust Badges — Hero Value Props
+   ============================================================ */
+
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Hero CTA Buttons
+   ============================================================ */
+
+.hero-ctas {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--accent-amber);
+  color: #0a0a0f;
+  border: 1px solid var(--accent-amber);
+}
+
+.btn-primary:hover {
+  background: #d97706;
+  border-color: #d97706;
+  color: #0a0a0f;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
+}
+
 .stats {
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -413,19 +490,18 @@ main {
 }
 
 /* ============================================================
-   Service Card — Dark Surface with Glow Hover
+   Service Card — Clean Single-Column Flow
    ============================================================ */
 
 .service-card {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
   border-radius: 0;
-  padding: 1.25rem 1.75rem;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  gap: 0.5rem 2rem;
-  transition: background 0.2s;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: background 0.25s;
   position: relative;
   /* Staggered entrance animation */
   opacity: 0;
@@ -467,16 +543,33 @@ main {
   background: var(--bg-surface-hover);
 }
 
+/* --- Card Header Row: icon + name (left) … source + time (right) --- */
+
 .card-header {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
+  min-width: 0; /* allow truncation */
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-header-right {
+  display: flex;
+  align-items: center;
   gap: 0.65rem;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .service-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   object-fit: cover;
   flex-shrink: 0;
@@ -485,11 +578,13 @@ main {
 
 .service-name {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s;
   letter-spacing: -0.01em;
 }
@@ -499,57 +594,78 @@ main {
   text-decoration: none;
 }
 
+/* Service URL — small, subtle line below name */
+.service-url {
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-top: -0.35rem;
+}
+
+.service-url:hover {
+  color: var(--accent-blue);
+}
+
+/* Description */
 .service-about {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.55;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 /* ============================================================
-   Pricing Table — Accent Border, Compact
+   Pricing Chips — Horizontal Inline List
    ============================================================ */
 
-.pricing-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
-  border-left: 2px solid var(--accent-amber);
-  margin-left: 2px;
+.pricing-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.pricing-table th {
-  text-align: left;
+.pricing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-amber-dim);
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.pricing-chip .cap-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pricing-chip .cap-sep {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.pricing-chip .cap-price {
+  color: var(--accent-amber);
   font-weight: 600;
-  color: var(--text-secondary);
-  padding: 0.35rem 0.6rem;
-  font-family: var(--font-code);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.pricing-table td {
-  padding: 0.35rem 0.6rem;
-  color: var(--text-secondary);
-  font-family: var(--font-code);
-  font-size: 0.8rem;
-}
-
-.pricing-table tbody tr:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.pricing-table tbody tr {
-  transition: background 0.15s;
-}
-
-.pricing-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ============================================================
@@ -581,13 +697,12 @@ main {
   border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
-/* Source badge — top-right of card header */
+/* Source badge — sits in card-header-right */
 .badge.source {
   font-size: 0.68rem;
-  margin-left: auto;
   font-family: var(--font-code);
   letter-spacing: 0.02em;
-  order: 99; /* push to end of flex row */
+  white-space: nowrap;
 }
 
 /* Self-announced: green tint */
@@ -612,7 +727,33 @@ main {
 }
 
 /* ============================================================
-   Card Footer
+   Card Meta Row — Payment + Topics + Pubkey in one line
+   ============================================================ */
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.card-meta .badges {
+  display: contents; /* flatten badges into the meta flow */
+}
+
+/* Separator dot between badge groups */
+.meta-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Card Footer — Pubkey + Timestamp
    ============================================================ */
 
 .card-footer {
@@ -620,12 +761,8 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  flex-wrap: wrap;
 }
 
 .pubkey {
@@ -636,7 +773,7 @@ main {
 
 .pubkey code {
   font-family: var(--font-code);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -644,7 +781,7 @@ main {
   background: none;
   border: 1px solid var(--border-subtle);
   padding: 0.15rem 0.45rem;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   cursor: pointer;
   font-family: var(--font-code);
@@ -664,7 +801,7 @@ main {
 }
 
 .timestamp {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-align: right;
   white-space: nowrap;
@@ -870,10 +1007,6 @@ footer a:hover {
    ============================================================ */
 
 @media (max-width: 1024px) {
-  .service-card {
-    grid-template-columns: 1fr;
-  }
-
   header h1 {
     font-size: 2.2rem;
   }
@@ -932,9 +1065,45 @@ footer a:hover {
     align-items: center;
   }
 
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .card-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .card-meta {
+    gap: 0.35rem;
+  }
+
   .card-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .trust-badges {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .trust-badge {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.7rem;
+    justify-content: center;
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    justify-content: center;
   }
 }
 

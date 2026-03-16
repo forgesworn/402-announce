@@ -413,6 +413,14 @@ function renderServices() {
  * Builds a service card as a DOM element tree.
  * All untrusted strings are set via .textContent — never innerHTML.
  *
+ * Layout: single-column flow
+ *   1. Header row:  [icon] name  ···  source-badge  timestamp
+ *   2. URL link (subtle)
+ *   3. Description
+ *   4. Pricing chips (horizontal)
+ *   5. Meta row: payment badges · topic pills
+ *   6. Footer: pubkey + copy
+ *
  * @param {object} s - Parsed service object
  * @returns {HTMLElement} The constructed article element
  */
@@ -420,130 +428,158 @@ function buildCard(s) {
   const article = document.createElement('article')
   article.className = 'service-card'
 
-  // --- Header ---
+  // --- Header row ---
   const header = document.createElement('div')
   header.className = 'card-header'
 
-  // Source badge
-  const sourceBadge = document.createElement('span')
-  sourceBadge.className = 'badge source source-' + (s.source === 'nostr' ? 'nostr' : 'indexed')
-  sourceBadge.textContent = s.source === 'nostr' ? 'Self-announced' : 'Indexed via ' + s.source
-  header.appendChild(sourceBadge)
+  const headerLeft = document.createElement('div')
+  headerLeft.className = 'card-header-left'
 
   if (s.picture) {
     const img = document.createElement('img')
-    img.src = s.picture           // URL — browser will not execute this
-    img.alt = s.name + ' icon'    // .alt set as property, not attribute injection
+    img.src = s.picture
+    img.alt = s.name + ' icon'
     img.className = 'service-icon'
     img.width = 32
     img.height = 32
-    header.appendChild(img)
+    headerLeft.appendChild(img)
   }
 
-  const nameLink = document.createElement('a')
-  nameLink.href = s.url           // URL — browser handles safely
-  nameLink.target = '_blank'
-  nameLink.rel = 'noopener noreferrer'
-  nameLink.className = 'service-name'
-  nameLink.textContent = s.name
-  header.appendChild(nameLink)
+  const nameEl = document.createElement('a')
+  nameEl.href = s.url
+  nameEl.target = '_blank'
+  nameEl.rel = 'noopener noreferrer'
+  nameEl.className = 'service-name'
+  // Strip "@ <url>" suffix from name if present (some announcers include it)
+  const atIdx = s.name.indexOf(' @ ')
+  nameEl.textContent = atIdx > 0 ? s.name.slice(0, atIdx) : s.name
+  headerLeft.appendChild(nameEl)
 
-  article.appendChild(header)
+  const headerRight = document.createElement('div')
+  headerRight.className = 'card-header-right'
 
-  // --- About ---
-  const about = document.createElement('p')
-  about.className = 'service-about'
-  about.textContent = s.about
-  article.appendChild(about)
-
-  // --- Pricing table ---
-  if (s.pricing.length > 0) {
-    const table = document.createElement('table')
-    table.className = 'pricing-table'
-
-    const thead = document.createElement('thead')
-    const headRow = document.createElement('tr')
-    const thCap = document.createElement('th')
-    thCap.scope = 'col'
-    thCap.textContent = 'Capability'
-    const thPrice = document.createElement('th')
-    thPrice.scope = 'col'
-    thPrice.textContent = 'Price'
-    headRow.appendChild(thCap)
-    headRow.appendChild(thPrice)
-    thead.appendChild(headRow)
-    table.appendChild(thead)
-
-    const tbody = document.createElement('tbody')
-    s.pricing.forEach(p => {
-      const row = document.createElement('tr')
-      const tdCap = document.createElement('td')
-      tdCap.textContent = p.capability
-      const tdPrice = document.createElement('td')
-      tdPrice.textContent = p.price + ' ' + p.currency
-      row.appendChild(tdCap)
-      row.appendChild(tdPrice)
-      tbody.appendChild(row)
-    })
-    table.appendChild(tbody)
-    article.appendChild(table)
-  }
-
-  // --- Payment method badges ---
-  if (s.paymentMethods.length > 0) {
-    const badgesDiv = document.createElement('div')
-    badgesDiv.className = 'badges'
-    badgesDiv.setAttribute('aria-label', 'Payment methods')
-    s.paymentMethods.forEach(m => {
-      const badge = document.createElement('span')
-      badge.className = 'badge payment'
-      badge.textContent = formatPaymentMethod(m)
-      badgesDiv.appendChild(badge)
-    })
-    article.appendChild(badgesDiv)
-  }
-
-  // --- Topic pills ---
-  if (s.topics.length > 0) {
-    const topicsDiv = document.createElement('div')
-    topicsDiv.className = 'badges topics'
-    topicsDiv.setAttribute('aria-label', 'Topics')
-    s.topics.forEach(t => {
-      const pill = document.createElement('span')
-      pill.className = 'badge topic'
-      pill.textContent = t
-      topicsDiv.appendChild(pill)
-    })
-    article.appendChild(topicsDiv)
-  }
-
-  // --- Footer ---
-  const footer = document.createElement('div')
-  footer.className = 'card-footer'
-
-  const pubkeySpan = document.createElement('span')
-  pubkeySpan.className = 'pubkey'
-
-  const code = document.createElement('code')
-  code.title = s.pubkey
-  code.textContent = s.pubkey.slice(0, 8) + '...' + s.pubkey.slice(-4)
-  pubkeySpan.appendChild(code)
-
-  const copyBtn = document.createElement('button')
-  copyBtn.className = 'copy-pubkey'
-  copyBtn.dataset.pubkey = s.pubkey
-  copyBtn.setAttribute('aria-label', 'Copy full public key')
-  copyBtn.textContent = 'Copy'
-  pubkeySpan.appendChild(copyBtn)
+  const sourceBadge = document.createElement('span')
+  sourceBadge.className = 'badge source source-' + (s.source === 'nostr' ? 'nostr' : 'indexed')
+  sourceBadge.textContent = s.source === 'nostr' ? 'Self-announced' : 'Indexed via ' + s.source
+  headerRight.appendChild(sourceBadge)
 
   const timestampSpan = document.createElement('span')
   timestampSpan.className = 'timestamp'
   timestampSpan.title = new Date(s.createdAt * 1000).toISOString()
   timestampSpan.textContent = getTimeAgo(s.createdAt)
+  headerRight.appendChild(timestampSpan)
 
-  footer.appendChild(pubkeySpan)
-  footer.appendChild(timestampSpan)
-  article.appendChild(footer)
+  header.appendChild(headerLeft)
+  header.appendChild(headerRight)
+  article.appendChild(header)
+
+  // --- URL ---
+  const urlLink = document.createElement('a')
+  urlLink.href = s.url
+  urlLink.target = '_blank'
+  urlLink.rel = 'noopener noreferrer'
+  urlLink.className = 'service-url'
+  urlLink.textContent = s.url
+  article.appendChild(urlLink)
+
+  // --- About ---
+  if (s.about) {
+    const about = document.createElement('p')
+    about.className = 'service-about'
+    about.textContent = s.about
+    article.appendChild(about)
+  }
+
+  // --- Pricing chips ---
+  if (s.pricing.length > 0) {
+    const pricingRow = document.createElement('div')
+    pricingRow.className = 'pricing-row'
+    pricingRow.setAttribute('aria-label', 'Pricing')
+
+    s.pricing.forEach(p => {
+      const chip = document.createElement('span')
+      chip.className = 'pricing-chip'
+
+      const capName = document.createElement('span')
+      capName.className = 'cap-name'
+      capName.textContent = formatCapability(p.capability)
+
+      const sep = document.createElement('span')
+      sep.className = 'cap-sep'
+      sep.textContent = '—'
+
+      const capPrice = document.createElement('span')
+      capPrice.className = 'cap-price'
+      capPrice.textContent = p.price + ' ' + p.currency
+
+      chip.appendChild(capName)
+      chip.appendChild(sep)
+      chip.appendChild(capPrice)
+      pricingRow.appendChild(chip)
+    })
+
+    article.appendChild(pricingRow)
+  }
+
+  // --- Meta row: payment methods + topics ---
+  const hasPayments = s.paymentMethods.length > 0
+  const hasTopics = s.topics.length > 0
+
+  if (hasPayments || hasTopics) {
+    const meta = document.createElement('div')
+    meta.className = 'card-meta'
+
+    if (hasPayments) {
+      s.paymentMethods.forEach(m => {
+        const badge = document.createElement('span')
+        badge.className = 'badge payment'
+        badge.textContent = formatPaymentMethod(m)
+        meta.appendChild(badge)
+      })
+    }
+
+    if (hasPayments && hasTopics) {
+      const sep = document.createElement('span')
+      sep.className = 'meta-sep'
+      sep.setAttribute('aria-hidden', 'true')
+      meta.appendChild(sep)
+    }
+
+    if (hasTopics) {
+      s.topics.forEach(t => {
+        const pill = document.createElement('span')
+        pill.className = 'badge topic'
+        pill.textContent = t
+        meta.appendChild(pill)
+      })
+    }
+
+    article.appendChild(meta)
+  }
+
+  // --- Footer: pubkey ---
+  if (s.pubkey) {
+    const footer = document.createElement('div')
+    footer.className = 'card-footer'
+
+    const pubkeySpan = document.createElement('span')
+    pubkeySpan.className = 'pubkey'
+
+    const code = document.createElement('code')
+    code.title = s.pubkey
+    code.textContent = s.pubkey.slice(0, 8) + '...' + s.pubkey.slice(-4)
+    pubkeySpan.appendChild(code)
+
+    const copyBtn = document.createElement('button')
+    copyBtn.className = 'copy-pubkey'
+    copyBtn.dataset.pubkey = s.pubkey
+    copyBtn.setAttribute('aria-label', 'Copy full public key')
+    copyBtn.textContent = 'Copy'
+    pubkeySpan.appendChild(copyBtn)
+
+    footer.appendChild(pubkeySpan)
+    article.appendChild(footer)
+  }
 
   return article
 }
@@ -616,6 +652,20 @@ function formatPaymentMethod(m) {
   if (m.includes('cashu'))     return 'Cashu'
   if (m.includes('x402'))      return 'x402'
   return m
+}
+
+/**
+ * Shortens a capability string for display. Strips full URLs down
+ * to just "METHOD /path", e.g. "GET https://example.com/foo" → "GET /foo".
+ *
+ * @param {string} cap - Raw capability string
+ * @returns {string} Shortened display string
+ */
+function formatCapability(cap) {
+  // Match "METHOD https://host/path" and extract just "METHOD /path"
+  const match = cap.match(/^(GET|POST|PUT|DELETE|PATCH)\s+https?:\/\/[^/]+(\/\S*)$/i)
+  if (match) return match[1] + ' ' + match[2]
+  return cap
 }
 
 /**
@@ -799,6 +849,17 @@ document.addEventListener('click', (e) => {
   }
 
   renderServices()
+})
+
+// Smooth scroll for hero CTA buttons (respects prefers-reduced-motion)
+document.addEventListener('click', (e) => {
+  const cta = e.target.closest('#browse-cta, #announce-cta')
+  if (!cta) return
+  e.preventDefault()
+  const target = document.querySelector(cta.getAttribute('href'))
+  if (!target) return
+  const behaviour = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+  target.scrollIntoView({ behavior: behaviour })
 })
 
 /* ============================================================
