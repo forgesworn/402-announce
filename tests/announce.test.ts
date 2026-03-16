@@ -31,7 +31,7 @@ function makeConfig(overrides: Partial<AnnounceConfig> = {}): AnnounceConfig {
     relays: ['wss://relay.example.com'],
     identifier: 'jokes-api',
     name: 'Jokes API',
-    url: 'https://jokes.example.com',
+    urls: ['https://jokes.example.com'],
     about: 'A joke-telling service',
     pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
     paymentMethods: ['bitcoin-lightning-bolt11'],
@@ -398,14 +398,42 @@ describe('announceService', () => {
     ]
 
     for (const url of privateServiceUrls) {
-      it(`rejects service URL ${url}`, async () => {
-        const config = makeConfig({ url })
+      it(`rejects event when all urls are private (${url})`, async () => {
+        const config = makeConfig({ urls: [url] })
         await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
       })
     }
 
     it('accepts public service URL', async () => {
-      const config = makeConfig({ url: 'https://satgate.trotters.dev' })
+      const config = makeConfig({ urls: ['https://satgate.trotters.dev'] })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+
+    it('allows event when at least one url is public', async () => {
+      const config = makeConfig({
+        urls: ['http://192.168.1.1/api', 'https://satgate.trotters.dev'],
+      })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+
+    it('rejects event when ALL urls are private', async () => {
+      const config = makeConfig({
+        urls: ['http://localhost:3000/api', 'http://10.0.0.1/api'],
+      })
+      await expect(announceService(config)).rejects.toThrow(/private\/loopback/)
+    })
+
+    it('skips SSRF check for .onion urls (treats them as public)', async () => {
+      const config = makeConfig({
+        urls: ['http://exampleonion123.onion/api'],
+      })
+      await expect(announceService(config)).resolves.toBeDefined()
+    })
+
+    it('allows mix of .onion and private http (onion counts as public)', async () => {
+      const config = makeConfig({
+        urls: ['http://192.168.1.1/api', 'http://exampleonion123.onion/api'],
+      })
       await expect(announceService(config)).resolves.toBeDefined()
     })
   })
