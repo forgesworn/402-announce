@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/TheCryptoDonkey/402-announce/compare/v1.4.0...v1.4.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* filter localhost URLs from dashboard, disable satring.com (CORS blocked) ([d3a03ad](https://github.com/TheCryptoDonkey/402-announce/commit/d3a03ad8a4f90727e4767b4b91ebcda40b6c30a7))
+
 # [1.4.0](https://github.com/TheCryptoDonkey/402-announce/compare/v1.3.0...v1.4.0) (2026-03-15)
 
 
