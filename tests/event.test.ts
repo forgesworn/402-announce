@@ -673,6 +673,14 @@ describe('buildAnnounceEvent', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['blob:http://example.com/uuid'] }))).toThrow('disallowed scheme')
     })
 
+    it('rejects javascript: URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['javascript:alert(1)'] }))).toThrow(/disallowed scheme|not a valid URL/)
+    })
+
+    it('rejects vbscript: URL', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['vbscript:msgbox'] }))).toThrow(/disallowed scheme|not a valid URL/)
+    })
+
     it('still accepts http:// and https:// URLs', () => {
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['https://example.com'] }))).not.toThrow()
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ urls: ['http://example.com'] }))).not.toThrow()
