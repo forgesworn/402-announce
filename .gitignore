@@ -2,3 +2,10 @@ node_modules/
 build/
 *.tsbuildinfo
 .playwright-mcp/
+
+# Secrets — prevent accidental commits of key material
+.env
+.env.*
+*.pem
+*.key
+.npmrc
