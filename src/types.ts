@@ -40,8 +40,15 @@ export interface AnnounceConfig {
   picture?: string
   /** Pricing for capabilities */
   pricing: PricingDef[]
-  /** Accepted payment methods (e.g. ['bitcoin-lightning-bolt11', 'bitcoin-cashu']) */
-  paymentMethods: string[]
+  /**
+   * Payment method identifiers. Each entry is an array of tag elements:
+   * - L402: ['l402', 'lightning']
+   * - x402: ['x402', 'base', 'usdc', '<receiver-address>']
+   * - Cashu: ['cashu']
+   * - xCashu: ['xcashu']
+   * The first element (tag[1]) is the relay-side filter key.
+   */
+  paymentMethods: string[][]
   /** Optional topic tags for search/filtering (e.g. ['ai', 'inference']) */
   topics?: string[]
   /** Optional capability details (goes in content field) */

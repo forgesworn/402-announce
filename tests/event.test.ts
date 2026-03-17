@@ -19,7 +19,7 @@ function makeConfig(overrides: Partial<AnnounceConfig> = {}): Omit<AnnounceConfi
     urls: ['https://jokes.example.com'],
     about: 'A joke-telling service',
     pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
-    paymentMethods: ['bitcoin-lightning-bolt11'],
+    paymentMethods: [['l402', 'lightning']],
     ...overrides,
   }
 }
@@ -92,14 +92,14 @@ describe('buildAnnounceEvent', () => {
 
   it('includes multiple pmi tags', () => {
     const config = makeConfig({
-      paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu'],
+      paymentMethods: [['l402', 'lightning'], ['cashu']],
     })
     const event = buildAnnounceEvent(config.secretKey, config)
 
     const pmiTags = event.tags.filter(t => t[0] === 'pmi')
     expect(pmiTags).toHaveLength(2)
-    expect(pmiTags[0]).toEqual(['pmi', 'bitcoin-lightning-bolt11'])
-    expect(pmiTags[1]).toEqual(['pmi', 'bitcoin-cashu'])
+    expect(pmiTags[0]).toEqual(['pmi', 'l402', 'lightning'])
+    expect(pmiTags[1]).toEqual(['pmi', 'cashu'])
   })
 
   it('sets content with capabilities when provided', () => {
@@ -333,24 +333,31 @@ describe('buildAnnounceEvent', () => {
     })
 
     it('rejects more than 20 paymentMethods', () => {
-      const paymentMethods = Array.from({ length: 21 }, (_, i) => `method-${i}`)
+      const paymentMethods = Array.from({ length: 21 }, (_, i) => [`l402`, `method-${i}`])
       expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods }))).toThrow('must not exceed 20')
     })
 
-    it('rejects empty string paymentMethod', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [''] }))).toThrow('must not be empty')
+    it('rejects invalid rail', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [['invalid']] }))).toThrow('rail must be one of')
     })
 
-    it('rejects whitespace-only paymentMethod', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['  '] }))).toThrow('must not be empty')
+    it('rejects empty array entry', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [[]] as any }))).toThrow('non-empty arrays')
     })
 
-    it('rejects paymentMethod longer than 64 characters', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['a'.repeat(65)] }))).toThrow('must not exceed 64')
+    it('accepts valid multi-element pmi', () => {
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({
+        paymentMethods: [['l402', 'lightning'], ['x402', 'base', 'usdc', '0xabc123']],
+      }))).not.toThrow()
     })
 
-    it('accepts valid paymentMethods', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu'] }))).not.toThrow()
+    it('builds x402 pmi tag with all params', () => {
+      const config = makeConfig({
+        paymentMethods: [['x402', 'base', 'usdc', '0xabc123']],
+      })
+      const event = buildAnnounceEvent(config.secretKey, config)
+      const pmiTags = event.tags.filter(t => t[0] === 'pmi')
+      expect(pmiTags[0]).toEqual(['pmi', 'x402', 'base', 'usdc', '0xabc123'])
     })
   })
 
@@ -761,7 +768,7 @@ describe('buildAnnounceEvent', () => {
     })
 
     it('rejects control chars in paymentMethods', () => {
-      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: ['method\x7f'] }))).toThrow('control characters')
+      expect(() => buildAnnounceEvent(makeSecretKeyHex(), makeConfig({ paymentMethods: [['l402', 'method\x7f']] }))).toThrow('control characters')
     })
 
     it('rejects control chars in pricing capability', () => {

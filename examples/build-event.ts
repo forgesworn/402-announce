@@ -32,7 +32,7 @@ const event = buildAnnounceEvent(NOSTR_SECRET_KEY, {
   pricing: [
     { capability: 'translate', price: 2, currency: 'sats' },
   ],
-  paymentMethods: ['bitcoin-lightning-bolt11'],
+  paymentMethods: [['l402', 'lightning']],
   capabilities: [
     { name: 'translate', description: 'Translate text between languages' },
   ],

@@ -148,15 +148,24 @@ export function buildAnnounceEvent(
   if (config.paymentMethods.length > 20) {
     throw new Error('config.paymentMethods must not exceed 20 entries')
   }
+  const validRails = new Set(['l402', 'x402', 'cashu', 'xcashu'])
   for (const pm of config.paymentMethods) {
-    if (pm.trim().length === 0) {
-      throw new Error('config.paymentMethods entries must not be empty or whitespace-only')
+    if (!Array.isArray(pm) || pm.length === 0) {
+      throw new Error('config.paymentMethods entries must be non-empty arrays')
     }
-    if (pm.length > 64) {
-      throw new Error(`config.paymentMethods entry must not exceed 64 characters, got: "${pm.slice(0, 20)}..."`)
+    if (!validRails.has(pm[0])) {
+      throw new Error(`config.paymentMethods rail must be one of: ${[...validRails].join(', ')}. Got: "${pm[0]}"`)
     }
-    if (hasControlChars(pm)) {
-      throw new Error('config.paymentMethods entries must not contain control characters')
+    for (const element of pm) {
+      if (typeof element !== 'string' || element.trim().length === 0) {
+        throw new Error('config.paymentMethods elements must be non-empty strings')
+      }
+      if (element.length > 256) {
+        throw new Error(`config.paymentMethods element must not exceed 256 characters`)
+      }
+      if (hasControlChars(element)) {
+        throw new Error('config.paymentMethods elements must not contain control characters')
+      }
     }
   }
 
@@ -218,7 +227,7 @@ export function buildAnnounceEvent(
     }
 
     for (const pm of config.paymentMethods) {
-      tags.push(['pmi', pm])
+      tags.push(['pmi', ...pm])
     }
 
     for (const p of config.pricing) {

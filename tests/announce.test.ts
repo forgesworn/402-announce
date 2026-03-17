@@ -34,7 +34,7 @@ function makeConfig(overrides: Partial<AnnounceConfig> = {}): AnnounceConfig {
     urls: ['https://jokes.example.com'],
     about: 'A joke-telling service',
     pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
-    paymentMethods: ['bitcoin-lightning-bolt11'],
+    paymentMethods: [['l402', 'lightning']],
     ...overrides,
   }
 }

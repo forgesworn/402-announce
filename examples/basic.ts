@@ -37,7 +37,7 @@ const handle = await announceService({
   ],
 
   // Accepted payment methods
-  paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu'],
+  paymentMethods: [['l402', 'lightning'], ['cashu']],
 
   // Optional: topic tags for search/filtering
   topics: ['weather', 'data', 'ai'],
