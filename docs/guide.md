@@ -6,7 +6,7 @@ your HTTP 402 paid API for decentralised discovery.
 ## Prerequisites
 
 - Node.js 18+
-- A paid API endpoint (e.g. behind [toll-booth](https://github.com/TheCryptoDonkey/toll-booth))
+- A paid API endpoint (e.g. behind [toll-booth](https://github.com/forgesworn/toll-booth))
 - A Nostr keypair (64-char hex secret key)
 
 ## Install
@@ -80,7 +80,7 @@ Agents discovering your service will see both options and choose what they suppo
 
 ## Using with toll-booth
 
-If you're using toll-booth, use [toll-booth-announce](https://github.com/TheCryptoDonkey/toll-booth-announce)
+If you're using toll-booth, use [toll-booth-announce](https://github.com/forgesworn/toll-booth-announce)
 for automatic config mapping:
 
 ```typescript

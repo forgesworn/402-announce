@@ -42,7 +42,7 @@ Replace lines 12-21 with the new hero structure. Trust badges + CTAs go between 
   <header>
     <div class="header-content">
       <h1>Discover Paid APIs</h1>
-      <p class="subtitle">Live services announcing on the Nostr network via <a href="https://github.com/TheCryptoDonkey/402-announce">kind 31402</a></p>
+      <p class="subtitle">Live services announcing on the Nostr network via <a href="https://github.com/forgesworn/402-announce">kind 31402</a></p>
 
       <div class="trust-badges">
         <span class="trust-badge">No registry</span>
@@ -256,7 +256,7 @@ curl -i https://satgate.trotters.dev/v1/chat/completions \
 # Pay the Lightning invoice, use the L402 token</code></pre>
         <div class="audience-links">
           <a href="https://www.npmjs.com/package/402-announce">402-announce on npm</a>
-          <a href="https://github.com/TheCryptoDonkey/402-announce">GitHub</a>
+          <a href="https://github.com/forgesworn/402-announce">GitHub</a>
         </div>
       </div>
 
@@ -294,7 +294,7 @@ ws.onmessage = (e) => {
         </div>
         <div class="audience-links">
           <a href="https://www.npmjs.com/package/402-mcp">402-mcp on npm</a>
-          <a href="https://github.com/TheCryptoDonkey/402-mcp">GitHub</a>
+          <a href="https://github.com/forgesworn/402-mcp">GitHub</a>
         </div>
       </div>
     </section>

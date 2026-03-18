@@ -5,7 +5,7 @@
 If you discover a security vulnerability in 402-announce, please report it
 responsibly via **GitHub private vulnerability reporting**:
 
-1. Go to [Security > Advisories](https://github.com/TheCryptoDonkey/402-announce/security/advisories)
+1. Go to [Security > Advisories](https://github.com/forgesworn/402-announce/security/advisories)
 2. Click **"Report a vulnerability"**
 3. Provide a clear description, steps to reproduce, and any relevant context
 

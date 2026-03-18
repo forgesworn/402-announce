@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/TheCryptoDonkey/402-announce.git
+git clone https://github.com/forgesworn/402-announce.git
 cd 402-announce
 npm install
 ```

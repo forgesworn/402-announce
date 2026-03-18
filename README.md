@@ -2,7 +2,7 @@
 
 Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L402 and x402 payment protocols.
 
-[![CI](https://github.com/TheCryptoDonkey/402-announce/actions/workflows/ci.yml/badge.svg)](https://github.com/TheCryptoDonkey/402-announce/actions/workflows/ci.yml)
+[![CI](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml/badge.svg)](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](./README.md)
 [![MIT Licence](https://img.shields.io/badge/licence-MIT-blue.svg)](./LICENSE)
 
@@ -24,7 +24,7 @@ flowchart LR
     style D fill:#3b82f6,color:#fff
 ```
 
-Your API publishes a service announcement to Nostr relays. AI agents (via [402-mcp](https://github.com/TheCryptoDonkey/402-mcp)) discover it, pay the invoice, and consume the API. No central registry required.
+Your API publishes a service announcement to Nostr relays. AI agents (via [402-mcp](https://github.com/forgesworn/402-mcp)) discover it, pay the invoice, and consume the API. No central registry required.
 
 ## Quick start
 
@@ -116,9 +116,9 @@ flowchart LR
     style MCP fill:#3b82f6,color:#fff
 ```
 
-1. **[toll-booth](https://github.com/TheCryptoDonkey/toll-booth)** wraps your API with an L402 paywall
+1. **[toll-booth](https://github.com/forgesworn/toll-booth)** wraps your API with an L402 paywall
 2. **402-announce** publishes a kind 31402 event describing the service, pricing, and payment methods
-3. **[402-mcp](https://github.com/TheCryptoDonkey/402-mcp)** discovers the announcement, pays the invoice, and calls your API
+3. **[402-mcp](https://github.com/forgesworn/402-mcp)** discovers the announcement, pays the invoice, and calls your API
 
 ## What it does
 
@@ -130,8 +130,8 @@ flowchart LR
 
 ## What it does not do
 
-- Does not run an L402 paywall (use [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) for that)
-- Does not subscribe to or search for announcements (use [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) for that)
+- Does not run an L402 paywall (use [toll-booth](https://github.com/forgesworn/toll-booth) for that)
+- Does not subscribe to or search for announcements (use [402-mcp](https://github.com/forgesworn/402-mcp) for that)
 - Does not handle payments or token verification
 
 ## API
@@ -269,10 +269,10 @@ In short: same service + different network paths → one event with multiple `ur
 
 | Package | Purpose |
 |---------|---------|
-| [toll-booth](https://github.com/TheCryptoDonkey/toll-booth) | L402 middleware — any API becomes a toll booth in minutes |
-| [toll-booth-announce](https://github.com/TheCryptoDonkey/toll-booth-announce) | Bridge — announce toll-booth services with one function call |
-| [satgate](https://github.com/TheCryptoDonkey/satsgate) | Production L402 gateway with Lightning and Cashu support |
-| [402-mcp](https://github.com/TheCryptoDonkey/402-mcp) | MCP server for AI agents to discover, pay, and consume 402 APIs |
+| [toll-booth](https://github.com/forgesworn/toll-booth) | L402 middleware — any API becomes a toll booth in minutes |
+| [toll-booth-announce](https://github.com/forgesworn/toll-booth-announce) | Bridge — announce toll-booth services with one function call |
+| [satgate](https://github.com/forgesworn/satsgate) | Production L402 gateway with Lightning and Cashu support |
+| [402-mcp](https://github.com/forgesworn/402-mcp) | MCP server for AI agents to discover, pay, and consume 402 APIs |
 | [Live Dashboard](https://402.pub) | See every service announcing on the network |
 
 ## Licence

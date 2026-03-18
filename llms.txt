@@ -33,4 +33,4 @@ toll-booth (paywall) → protects your API
 For full API reference, event format, integration patterns, and examples see:
 - llms-full.txt (comprehensive reference)
 - README.md (human-oriented documentation with diagrams)
-- Source: https://github.com/TheCryptoDonkey/402-announce
+- Source: https://github.com/forgesworn/402-announce

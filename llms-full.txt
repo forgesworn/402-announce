@@ -2,7 +2,7 @@
 
 > Announce HTTP 402 services on Nostr for decentralised discovery.
 > Supports both L402 and x402 payment protocols.
-> Source: https://github.com/TheCryptoDonkey/402-announce
+> Source: https://github.com/forgesworn/402-announce
 
 ## Overview
 
@@ -219,6 +219,6 @@ Relay-level failures during publication are handled gracefully:
 
 ## Source
 
-Repository: https://github.com/TheCryptoDonkey/402-announce
+Repository: https://github.com/forgesworn/402-announce
 Licence: MIT
 Runtime dependency: nostr-tools

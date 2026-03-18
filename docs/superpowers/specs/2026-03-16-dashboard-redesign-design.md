@@ -56,7 +56,7 @@ New section between hero and services grid. Two cards side by side on desktop, s
     -H "Accept: application/json"
   # Pay the Lightning invoice, use the L402 token
   ```
-- **Links:** [402-announce on npm](https://www.npmjs.com/package/402-announce), [GitHub](https://github.com/TheCryptoDonkey/402-announce)
+- **Links:** [402-announce on npm](https://www.npmjs.com/package/402-announce), [GitHub](https://github.com/forgesworn/402-announce)
 
 ### For AI Agents (right card, blue left-border accent)
 
@@ -69,7 +69,7 @@ New section between hero and services grid. Two cards side by side on desktop, s
 - **Tabbed code block** with two tabs:
   - **MCP tab** (default): JSON config for 402-mcp (`{ "mcpServers": { "402-mcp": { "command": "npx", "args": ["402-mcp"] }}}`)
   - **Nostr tab**: JS snippet subscribing to kind 31402
-- **Links:** [402-mcp on npm](https://www.npmjs.com/package/402-mcp), [GitHub](https://github.com/TheCryptoDonkey/402-mcp)
+- **Links:** [402-mcp on npm](https://www.npmjs.com/package/402-mcp), [GitHub](https://github.com/forgesworn/402-mcp)
 
 **Tab implementation:** Two button elements toggle visibility of two code blocks. Active tab gets amber fill, inactive gets outlined style. Pure vanilla JS, no framework. Tabs follow WAI-ARIA Tabs pattern: container has `role="tablist"`, each tab button has `role="tab"` with `aria-selected` and `aria-controls`, each code panel has `role="tabpanel"` with `aria-labelledby`. Arrow keys move focus between tabs.
 

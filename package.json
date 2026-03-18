@@ -58,7 +58,7 @@
   "homepage": "https://402.pub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheCryptoDonkey/402-announce.git"
+    "url": "https://github.com/forgesworn/402-announce.git"
   },
   "engines": {
     "node": ">=18"
