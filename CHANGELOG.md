@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/forgesworn/402-announce/compare/v1.11.2...v2.0.0) (2026-03-18)
+
+
+### Features
+
+* structured payment method arrays ([d1eb2f7](https://github.com/forgesworn/402-announce/commit/d1eb2f7f4595403977383157eb80a1baf3b39542))
+
+
+### BREAKING CHANGES
+
+* paymentMethods type changed from string[] to string[][].
+
 ## [1.11.2](https://github.com/TheCryptoDonkey/402-announce/compare/v1.11.1...v1.11.2) (2026-03-16)
 
 
