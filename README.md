@@ -1,5 +1,7 @@
 # 402-announce
 
+**Nostr:** [`npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2`](https://njump.me/npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2)
+
 Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L402 and x402 payment protocols.
 
 [![CI](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml/badge.svg)](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml)
