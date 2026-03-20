@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/forgesworn/402-announce/compare/v2.0.0...v2.0.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* correct copyright to TheCryptoDonkey ([b3d9c15](https://github.com/forgesworn/402-announce/commit/b3d9c1575131a7a14fc4d4fa3ddd18c4f895de2c))
+
 # [2.0.0](https://github.com/forgesworn/402-announce/compare/v1.11.2...v2.0.0) (2026-03-18)
 
 
