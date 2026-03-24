@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/forgesworn/402-announce/compare/v2.0.1...v2.1.0) (2026-03-24)
+
+
+### Features
+
+* accept 'payment' as valid rail for IETF Payment announcements ([fde4763](https://github.com/forgesworn/402-announce/commit/fde47630a22f9f94280dc39d6b5817c0c60f5db9))
+
 ## [2.0.1](https://github.com/forgesworn/402-announce/compare/v2.0.0...v2.0.1) (2026-03-20)
 
 
