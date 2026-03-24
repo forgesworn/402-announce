@@ -148,7 +148,7 @@ export function buildAnnounceEvent(
   if (config.paymentMethods.length > 20) {
     throw new Error('config.paymentMethods must not exceed 20 entries')
   }
-  const validRails = new Set(['l402', 'x402', 'cashu', 'xcashu'])
+  const validRails = new Set(['l402', 'x402', 'cashu', 'xcashu', 'payment'])
   for (const pm of config.paymentMethods) {
     if (!Array.isArray(pm) || pm.length === 0) {
       throw new Error('config.paymentMethods entries must be non-empty arrays')
