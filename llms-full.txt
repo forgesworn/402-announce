@@ -34,7 +34,7 @@ AnnounceConfig:
   - urls (string[], required): Transport endpoint URLs (1–10 entries, each max 2048 characters)
   - about (string, required): Short description of the service
   - pricing (PricingDef[], required): Per-capability pricing. Each entry: { capability, price, currency }
-  - paymentMethods (string[], required): Accepted payment method identifiers
+  - paymentMethods (string[][], required): Accepted payment methods. Each entry is [rail, ...params] (e.g. ['l402', 'lightning'], ['cashu'], ['x402', 'base', 'usdc', '<addr>'])
   - picture (string, optional): Icon URL
   - topics (string[], optional): Topic tags for search/filtering
   - capabilities (CapabilityDef[], optional): Capability details stored in event content
@@ -103,7 +103,7 @@ Required tags:
   ["name", "<service name>"]      — Human-readable name
   ["url", "<endpoint URL>"]       — HTTP endpoint
   ["about", "<description>"]      — Short description
-  ["pmi", "<payment method>"]     — Payment method identifier (one tag per method)
+  ["pmi", "<rail>", ...params]     — Payment method identifier (one tag per method, multi-element)
   ["price", "<capability>", "<amount>", "<currency>"]  — Pricing (one tag per capability)
 
 Optional tags:
@@ -131,8 +131,8 @@ JSON object with optional fields:
     ["name", "Jokes API"],
     ["url", "https://jokes.example.com"],
     ["about", "A joke-telling service behind an L402 paywall"],
-    ["pmi", "bitcoin-lightning-bolt11"],
-    ["pmi", "bitcoin-cashu"],
+    ["pmi", "l402", "lightning"],
+    ["pmi", "cashu"],
     ["price", "get_joke", "1", "sats"],
     ["t", "comedy"],
     ["t", "ai"]
@@ -144,13 +144,13 @@ JSON object with optional fields:
 
 ## Payment Method Identifiers
 
-Known payment method identifiers for the `pmi` tag and `paymentMethods` config:
+Each `paymentMethods` entry is an array where the first element is the rail identifier and subsequent elements are rail-specific parameters. Known rails:
 
-  bitcoin-lightning-bolt11   — Lightning Network BOLT-11 invoices
-  bitcoin-cashu              — Cashu ecash tokens
-  bitcoin-onchain            — On-chain Bitcoin
-  x402-evm                   — x402 protocol on EVM chains
-  x402-solana                — x402 protocol on Solana
+  l402      — L402 protocol. Example: ['l402', 'lightning']
+  cashu     — Cashu ecash. Example: ['cashu']
+  xcashu    — Cashu ecash via NUT-24 (X-Cashu header). Example: ['xcashu']
+  x402      — x402 stablecoin payments. Example: ['x402', 'base', 'usdc', '0xabc...']
+  payment   — IETF Payment protocol. Example: ['payment', 'lightning']
 
 ## Integration Patterns
 
@@ -175,7 +175,7 @@ const handle = await announceService({
   urls: ['https://api.example.com'],
   about: 'A paid API service',
   pricing: [{ capability: 'query', price: 10, currency: 'sats' }],
-  paymentMethods: ['bitcoin-lightning-bolt11'],
+  paymentMethods: [['l402', 'lightning']],
 })
 
 // 3. Clean up on shutdown

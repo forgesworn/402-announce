@@ -47,7 +47,7 @@ const handle = await announceService({
   pricing: [
     { capability: 'get_joke', price: 1, currency: 'sats' },
   ],
-  paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu', 'bitcoin-cashu-xcashu'],
+  paymentMethods: [['l402', 'lightning'], ['cashu'], ['xcashu']],
   topics: ['comedy', 'ai'],
   capabilities: [
     { name: 'get_joke', description: 'Returns a random joke' },
@@ -77,7 +77,7 @@ const handle = await announceService({
   ],
   about: 'A joke-telling service behind an L402 paywall',
   pricing: [{ capability: 'get_joke', price: 1, currency: 'sats' }],
-  paymentMethods: ['bitcoin-lightning-bolt11'],
+  paymentMethods: [['l402', 'lightning']],
   topics: ['comedy', 'ai'],
 })
 ```
@@ -162,7 +162,7 @@ Lower-level function that builds and signs the event without publishing. Useful 
 | `urls`           | `string[]`        | yes      | HTTP endpoints for the service (1–10 entries, any parseable URL) |
 | `about`          | `string`          | yes      | Short description                              |
 | `pricing`        | `PricingDef[]`    | yes      | Per-capability pricing                         |
-| `paymentMethods` | `string[]`        | yes      | Accepted payment methods                       |
+| `paymentMethods` | `string[][]`      | yes      | Accepted payment methods (each entry is `[rail, ...params]`) |
 | `picture`        | `string`          | no       | Icon URL                                       |
 | `topics`         | `string[]`        | no       | Topic tags for filtering                       |
 | `capabilities`   | `CapabilityDef[]` | no       | Capability details (stored in event content)   |
@@ -200,8 +200,8 @@ graph TB
             U1["url: https://jokes.example.com"]
             U2["url: https://jokesapi.example.onion (optional)"]
             AB["about: A joke-telling service"]
-            PMI1["pmi: bitcoin-lightning-bolt11"]
-            PMI2["pmi: bitcoin-cashu"]
+            PMI1["pmi: l402, lightning"]
+            PMI2["pmi: cashu"]
             P["price: get_joke, 1, sats"]
             T["t: comedy"]
         end
@@ -223,19 +223,22 @@ graph TB
 | `name`    | yes      | Human-readable service name                  | `Jokes API`                       |
 | `url`     | yes      | HTTP endpoint (one tag per URL; repeatable)  | `https://jokes.example.com`       |
 | `about`   | yes      | Short description                            | `A joke-telling service`          |
-| `pmi`     | yes      | Payment method identifier (repeatable)       | `bitcoin-lightning-bolt11`        |
+| `pmi`     | yes      | Payment method identifier (repeatable, multi-element) | `l402`, `lightning`        |
 | `price`   | yes      | Capability pricing (repeatable)              | `get_joke`, `1`, `sats`           |
 | `t`       | no       | Topic tag for search/filtering (repeatable)  | `comedy`                          |
 | `picture` | no       | Icon URL                                     | `https://example.com/icon.png`    |
 
-### Recognised Payment Method Identifiers
+### Recognised Payment Method Rails
 
-| Identifier | Description |
-|------------|-------------|
-| `bitcoin-lightning-bolt11` | Lightning Network (BOLT-11 invoices) |
-| `bitcoin-cashu` | Cashu ecash (generic) |
-| `bitcoin-cashu-xcashu` | Cashu ecash via NUT-24 (X-Cashu header) |
-| `x402-evm` | x402 stablecoin payments (EVM chains) |
+Each `paymentMethods` entry is an array where the first element is the rail identifier and subsequent elements are rail-specific parameters.
+
+| Rail | Example | Description |
+|------|---------|-------------|
+| `l402` | `['l402', 'lightning']` | L402 protocol (Lightning BOLT-11 invoices) |
+| `cashu` | `['cashu']` | Cashu ecash (generic) |
+| `xcashu` | `['xcashu']` | Cashu ecash via NUT-24 (X-Cashu header) |
+| `x402` | `['x402', 'base', 'usdc', '0xabc...']` | x402 stablecoin payments (chain, token, receiver address) |
+| `payment` | `['payment', 'lightning']` | IETF Payment protocol |
 
 ### Content
 

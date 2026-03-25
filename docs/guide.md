@@ -30,7 +30,7 @@ const handle = await announceService({
   pricing: [
     { capability: 'query', price: 1, currency: 'sats' },
   ],
-  paymentMethods: ['bitcoin-lightning-bolt11'],
+  paymentMethods: [['l402', 'lightning']],
 })
 
 console.log('Published:', handle.eventId)
@@ -73,10 +73,10 @@ It uses toll-booth for L402 payments and 402-announce for discovery.
 Announce that you accept both Lightning and Cashu ecash:
 
 ```typescript
-paymentMethods: ['bitcoin-lightning-bolt11', 'bitcoin-cashu-xcashu'],
+paymentMethods: [['l402', 'lightning'], ['xcashu']],
 ```
 
-Agents discovering your service will see both options and choose what they support.
+Each entry is an array where the first element is the rail (`l402`, `cashu`, `xcashu`, `x402`, `payment`) and subsequent elements are rail-specific parameters. Agents discovering your service will see both options and choose what they support.
 
 ## Using with toll-booth
 
