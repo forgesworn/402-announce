@@ -25,7 +25,7 @@ const handle = await announceService({
   relays: ['wss://relay.damus.io', 'wss://relay.primal.net'],
   identifier: 'my-api',
   name: 'My Paid API',
-  url: 'https://api.example.com',
+  urls: ['https://api.example.com'],
   about: 'A useful API behind an L402 paywall',
   pricing: [
     { capability: 'query', price: 1, currency: 'sats' },
@@ -89,7 +89,7 @@ import { announce } from 'toll-booth-announce'
 const handle = await announce(boothConfig, {
   secretKey: process.env.NOSTR_SECRET_KEY!,
   relays: ['wss://relay.damus.io'],
-  url: 'https://api.example.com',
+  urls: ['https://api.example.com'],
   about: 'My toll-booth API',
 })
 ```
