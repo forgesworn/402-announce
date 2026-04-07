@@ -6,26 +6,36 @@
 
 402-announce publishes kind 31402 parameterised replaceable Nostr events that describe paid HTTP APIs. AI agents and Nostr clients discover these announcements to find services they can pay for and consume — no central registry needed.
 
+## Kind 31402 — disambiguation
+
+This library uses kind 31402 for **L402/x402 service announcements** (paid API discovery). This is distinct from any SARA (revenue share) proposals that may also reference kind 31402. The 402-announce definition: a parameterised replaceable event (NIP-33) where pubkey + d-tag uniquely identifies one service listing.
+
 ## Key concepts
 
 - **Kind 31402**: Nostr event kind for L402/x402 service announcements. Parameterised replaceable — same pubkey + identifier updates the existing listing.
-- **Payment methods**: Services declare accepted payment methods via multi-element `pmi` tags. Each `paymentMethods` entry is `[rail, ...params]` (e.g. `['l402', 'lightning']`, `['cashu']`, `['x402', 'base', 'usdc', '<addr>']`).
+- **Payment methods**: Services declare accepted payment methods via multi-element `pmi` tags. Each `paymentMethods` entry is `[rail, ...params]` (e.g. `['l402', 'lightning']`, `['cashu']`, `['x402', 'base', 'usdc', '<addr>']`, `['payment', 'lightning']`).
 - **Pricing**: Per-capability pricing via `price` tags (capability name, amount, currency).
 - **Decentralised discovery**: Events are published to standard Nostr relays. Any client can subscribe and filter.
+- **Multi-transport**: A single event can carry multiple `url` tags (1–10). Use this when the same service is reachable via clearnet, Tor (.onion), or Handshake domains.
 
 ## API surface
 
-Two exports:
+Three exports:
 
 - `announceService(config)` — build, sign, and publish to relays. Returns `{ eventId, pubkey, close() }`.
 - `buildAnnounceEvent(secretKey, config)` — build and sign without publishing. Returns a `VerifiedEvent`.
+- `isPrivateHost(hostname)` — utility: returns true if hostname is a private/loopback address (SSRF guard).
+
+Exported constant: `L402_ANNOUNCE_KIND = 31402`
 
 ## Ecosystem position
 
 ```
-toll-booth (paywall) → protects your API
-402-announce (this)  → tells the world your API exists
-402-mcp (discovery)  → AI agents find, pay, and consume your API
+toll-booth (paywall)         → protects your API with L402
+toll-booth-announce (bridge) → maps toll-booth config to 402-announce automatically
+402-announce (this)          → tells the world your API exists via kind 31402
+402-mcp (discovery)          → AI agents find, pay, and consume your API
+402.pub (dashboard)          → live view of all announcing services
 ```
 
 ## Details

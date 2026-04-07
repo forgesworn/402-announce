@@ -10,6 +10,10 @@
 
 The library handles event construction, signing, and multi-relay publication. Secret key material is zeroised after use.
 
+## Kind 31402 — disambiguation
+
+This library uses kind 31402 for **L402/x402 service announcements** (paid API discovery). This is distinct from any SARA (Simple Autonomous Revenue Agreement) proposals that may also reference kind 31402. The 402-announce definition: a parameterised replaceable event (NIP-33) where pubkey + d-tag uniquely identifies one service listing.
+
 ## Installation
 
 ```bash
@@ -28,13 +32,13 @@ High-level function: builds a kind 31402 event, signs it, connects to relays in 
 
 AnnounceConfig:
   - secretKey (string, required): 64-character hex-encoded Nostr secret key
-  - relays (string[], required): Relay URLs (must start with wss:// or ws://)
+  - relays (string[], required): Relay URLs (must start with wss:// or ws://). Maximum 50.
   - identifier (string, required): Unique listing ID, used as the Nostr `d` tag. Same pubkey + identifier = same listing.
   - name (string, required): Human-readable service name
-  - urls (string[], required): Transport endpoint URLs (1–10 entries, each max 2048 characters)
+  - urls (string[], required): Transport endpoint URLs (1–10 entries, each max 2048 characters). One `url` tag per entry in the event. Clients try in order.
   - about (string, required): Short description of the service
   - pricing (PricingDef[], required): Per-capability pricing. Each entry: { capability, price, currency }
-  - paymentMethods (string[][], required): Accepted payment methods. Each entry is [rail, ...params] (e.g. ['l402', 'lightning'], ['cashu'], ['x402', 'base', 'usdc', '<addr>'])
+  - paymentMethods (string[][], required): Accepted payment methods. Each entry is [rail, ...params]
   - picture (string, optional): Icon URL
   - topics (string[], optional): Topic tags for search/filtering
   - capabilities (CapabilityDef[], optional): Capability details stored in event content
@@ -42,31 +46,37 @@ AnnounceConfig:
 
 PricingDef:
   - capability (string): Capability name (e.g. "get_joke", "chat", "inference")
-  - price (number): Price amount
+  - price (number): Price amount (integer or fractional)
   - currency (string): Currency unit (e.g. "sats", "USD")
 
 CapabilityDef:
   - name (string): Capability name
   - description (string): Human-readable description
-  - schema (unknown, optional): JSON Schema describing the capability's input parameters
-  - outputSchema (unknown, optional): JSON Schema describing the capability's output
+  - endpoint (string, optional): Endpoint path or full URL for this capability (e.g. '/api/joke')
+  - schema (unknown, optional): JSON Schema describing the capability's input parameters (max depth 10)
+  - outputSchema (unknown, optional): JSON Schema describing the capability's output (max depth 10)
 
 **Returns** Announcement:
   - eventId (string): The published Nostr event ID
   - pubkey (string): Nostr pubkey derived from the secret key
-  - close(): void — Disconnect from all connected relays
+  - close(): void — Disconnect from all connected relays (synchronous; call on shutdown to avoid WebSocket leaks)
 
 **Behaviour:**
   - Validates secretKey (must be 64-char hex) and relay URLs (must be wss:// or ws://)
+  - Rejects relay URLs pointing to private/loopback addresses (SSRF prevention)
+  - Rejects service configs where all urls are private/loopback (at least one public URL required)
   - Connects to all relays in parallel with a 10-second timeout per relay
   - Individual relay failures are logged as warnings but do not reject the promise
   - If no relay accepts the event, a warning is emitted (but the promise still resolves)
   - Secret key bytes are zeroised after signing
+  - Warns on insecure ws:// relay URLs
 
 **Throws:**
   - If secretKey is not a 64-character hex string
-  - If relays array is empty
+  - If relays array is empty or contains more than 50 entries
   - If any relay URL does not start with wss:// or ws://
+  - If any relay URL points to a private/loopback address
+  - If all service URLs are private/loopback addresses
 
 ### buildAnnounceEvent(secretKeyHex: string, config: Omit<AnnounceConfig, 'relays'>): VerifiedEvent
 
@@ -74,7 +84,11 @@ Lower-level function: builds and signs the kind 31402 event without publishing. 
 
 **Returns** a nostr-tools VerifiedEvent ready for relay publication.
 
-Secret key bytes are zeroised after signing (via try/finally).
+Secret key bytes are zeroised after signing (via try/finally). Unlike announceService(), this function does not enforce the "at least one public URL" rule — it is a pure serialisation utility.
+
+### isPrivateHost(hostname: string): boolean
+
+Utility export. Returns true if the hostname is a private, loopback, link-local, or reserved address (IPv4 or IPv6). Used internally for SSRF prevention; exported for consumers who need the same guard.
 
 ### Constants
 
@@ -85,7 +99,7 @@ Secret key bytes are zeroised after signing (via try/finally).
 - AnnounceConfig — Configuration for announceService()
 - Announcement — Handle returned by announceService()
 - PricingDef — Pricing for a specific capability
-- CapabilityDef — Capability with description
+- CapabilityDef — Capability with description, optional endpoint and schemas
 
 ## Event Format Specification
 
@@ -99,12 +113,12 @@ A kind 31402 event is a Nostr parameterised replaceable event (NIP-33). This mea
 ### Tag structure
 
 Required tags:
-  ["d", "<identifier>"]           — Unique listing identifier
-  ["name", "<service name>"]      — Human-readable name
-  ["url", "<endpoint URL>"]       — HTTP endpoint
-  ["about", "<description>"]      — Short description
-  ["pmi", "<rail>", ...params]     — Payment method identifier (one tag per method, multi-element)
-  ["price", "<capability>", "<amount>", "<currency>"]  — Pricing (one tag per capability)
+  ["d", "<identifier>"]                                    — Unique listing identifier
+  ["name", "<service name>"]                               — Human-readable name
+  ["url", "<endpoint URL>"]                                — HTTP endpoint (one tag per URL; 1–10 allowed)
+  ["about", "<description>"]                               — Short description
+  ["pmi", "<rail>", ...params]                             — Payment method identifier (one tag per method)
+  ["price", "<capability>", "<amount>", "<currency>"]      — Pricing (one tag per capability)
 
 Optional tags:
   ["t", "<topic>"]                — Topic tag for filtering (one tag per topic)
@@ -115,7 +129,13 @@ Optional tags:
 JSON object with optional fields:
 {
   "capabilities": [
-    { "name": "get_joke", "description": "Returns a random joke" }
+    {
+      "name": "get_joke",
+      "description": "Returns a random joke",
+      "endpoint": "/api/joke",
+      "schema": { "type": "object", "properties": { "category": { "type": "string" } } },
+      "outputSchema": { "type": "object", "properties": { "joke": { "type": "string" } } }
+    }
   ],
   "version": "1.0.0"
 }
@@ -130,6 +150,7 @@ JSON object with optional fields:
     ["d", "jokes-api"],
     ["name", "Jokes API"],
     ["url", "https://jokes.example.com"],
+    ["url", "http://jokesxyz...onion"],
     ["about", "A joke-telling service behind an L402 paywall"],
     ["pmi", "l402", "lightning"],
     ["pmi", "cashu"],
@@ -146,17 +167,23 @@ JSON object with optional fields:
 
 Each `paymentMethods` entry is an array where the first element is the rail identifier and subsequent elements are rail-specific parameters. Known rails:
 
-  l402      — L402 protocol. Example: ['l402', 'lightning']
+  l402      — L402 protocol (Lightning BOLT-11 invoices). Example: ['l402', 'lightning']
   cashu     — Cashu ecash. Example: ['cashu']
   xcashu    — Cashu ecash via NUT-24 (X-Cashu header). Example: ['xcashu']
   x402      — x402 stablecoin payments. Example: ['x402', 'base', 'usdc', '0xabc...']
   payment   — IETF Payment protocol. Example: ['payment', 'lightning']
 
+## Multiple URLs vs Multiple Events
+
+**Multiple URLs in one event** — use `urls: ['...', '...']` when the URLs represent the **same service** on different transports (clearnet, Tor, Handshake). Pricing, credentials, and macaroon signing key are identical. Clients try in order and use whichever they can reach. This is for censorship resistance and redundancy.
+
+**Separate kind 31402 events** — publish a new event (different `identifier`) when you have **genuinely different services**: different pricing tiers, different capabilities, or services that operate independently.
+
+Rule: same service + different network paths → one event with multiple `url` tags. Different services → separate events.
+
 ## Integration Patterns
 
-### Producer side: toll-booth + 402-announce
-
-A typical server setup protects an API with toll-booth and announces it with 402-announce:
+### Producer: toll-booth + 402-announce
 
 ```typescript
 import { createTollBooth } from 'toll-booth'
@@ -182,9 +209,24 @@ const handle = await announceService({
 process.on('SIGTERM', () => handle.close())
 ```
 
-### Consumer side: 402-mcp
+### Producer shortcut: toll-booth-announce
 
-AI agents use 402-mcp to discover and consume announced services:
+If you're using toll-booth, [toll-booth-announce](https://github.com/forgesworn/toll-booth-announce) maps booth config to 402-announce automatically — pricing and payment methods are derived from your booth config:
+
+```typescript
+import { announce } from 'toll-booth-announce'
+
+const handle = await announce(boothConfig, {
+  secretKey: process.env.NOSTR_SECRET_KEY,
+  relays: ['wss://relay.damus.io'],
+  urls: ['https://api.example.com'],
+  about: 'My toll-booth API',
+})
+```
+
+### Consumer: 402-mcp
+
+AI agents use [402-mcp](https://github.com/forgesworn/402-mcp) to discover and consume announced services:
 
 1. 402-mcp subscribes to kind 31402 events on configured relays
 2. Agent searches for services by topic, capability, or payment method
@@ -197,20 +239,39 @@ The agent never needs to know about Nostr or payment protocols — 402-mcp abstr
 
 Because kind 31402 is a parameterised replaceable event, calling announceService() again with the same identifier and pubkey replaces the previous listing. Use this to update pricing, add capabilities, or change the endpoint URL.
 
+### Verify on relays
+
+```bash
+# Using nak (Nostr Army Knife)
+nak req -k 31402 wss://relay.damus.io
+
+# Filter by topic
+nak req -k 31402 -t t=ai wss://relay.damus.io
+```
+
+### Live dashboard
+
+[402.pub](https://402.pub) shows every service announcing on the network in real time.
+
 ## Security Considerations
 
 - **Key zeroisation**: Secret key bytes (Uint8Array) are filled with zeros immediately after signing, in both announceService() and buildAnnounceEvent(). This limits the window during which key material exists in memory.
-- **Key handling**: Pass the secret key as a hex string. The library converts to bytes, signs, and zeroises. Never log or persist the key yourself.
+- **Key handling**: Pass the secret key as a hex string. The library converts to bytes, signs, and zeroises. Never log or persist the key yourself. Note: JavaScript strings are immutable and cannot be erased — minimise the lifetime of the string in your application.
+- **SSRF prevention**: Relay URLs and service URLs are checked against private/loopback address patterns. DNS rebinding (hostname resolves to private IP at connection time) is not caught — deploy behind network-level egress controls in production.
 - **Relay trust**: Relays are untrusted infrastructure. Events are cryptographically signed — relay operators cannot forge announcements. However, relays can choose not to store or serve your events.
 - **Connection timeouts**: Relay connections time out after 10 seconds to prevent indefinite hangs.
 - **Graceful degradation**: If some relays fail, the event is still published to the others. A warning is emitted only if no relay accepts the event.
+- **Input limits**: URLs max 2048 chars, max 10 service URLs, max 50 relays, JSON schema depth capped at 10, control characters rejected in all string fields.
 
 ## Error Handling
 
 The library throws synchronously for invalid configuration:
 - secretKey not 64-char hex → Error
-- Empty relays array → Error
+- Empty relays array or more than 50 relays → Error
 - Invalid relay URL (not wss:// or ws://) → Error
+- Relay URL with credentials → Error
+- Relay URL pointing to private/loopback address → Error
+- All service URLs pointing to private/loopback addresses → Error
 
 Relay-level failures during publication are handled gracefully:
 - Connection timeouts → warning logged, other relays still tried
@@ -220,5 +281,7 @@ Relay-level failures during publication are handled gracefully:
 ## Source
 
 Repository: https://github.com/forgesworn/402-announce
+npm: https://www.npmjs.com/package/402-announce
+Live dashboard: https://402.pub
 Licence: MIT
 Runtime dependency: nostr-tools
