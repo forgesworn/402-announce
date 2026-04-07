@@ -17,7 +17,8 @@
     "LICENSE",
     "README.md",
     "llms.txt",
-    "llms-full.txt"
+    "llms-full.txt",
+    "context7.json"
   ],
   "scripts": {
     "build": "tsc",
