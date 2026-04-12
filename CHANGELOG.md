@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/forgesworn/402-announce/compare/v2.1.0...v2.1.1) (2026-04-12)
+
+
+### Bug Fixes
+
+* resolve development dependency vulnerabilities ([999b39c](https://github.com/forgesworn/402-announce/commit/999b39c0b502f4e026109ca25a0d225c25f4ce74))
+
 # [2.1.0](https://github.com/forgesworn/402-announce/compare/v2.0.1...v2.1.0) (2026-03-24)
 
 
