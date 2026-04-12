@@ -7,6 +7,7 @@ Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L
 [![CI](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml/badge.svg)](https://github.com/forgesworn/402-announce/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](./README.md)
 [![MIT Licence](https://img.shields.io/badge/licence-MIT-blue.svg)](./LICENSE)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/TheCryptoDonkey?logo=githubsponsors&color=ea4aaa&label=Sponsor)](https://github.com/sponsors/TheCryptoDonkey)
 
 Publishes **kind 31402** parameterised replaceable events so that AI agents (and any Nostr client) can discover paid APIs without a central registry.
 
