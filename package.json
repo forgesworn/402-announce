@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Announce HTTP 402 services (L402 and x402) on Nostr for decentralised discovery. Kind 31402 parameterised replaceable events.",
   "license": "MIT",
+  "publishConfig": {
+    "provenance": true
+  },
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "exports": {
@@ -30,12 +33,8 @@
     "nostr-tools": "^2.12.0"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^12.0.6",
     "@types/node": "^25.5.0",
     "@vitest/coverage-v8": "^4.1.0",
-    "semantic-release": "^25.0.3",
     "typescript": "^5.7.0",
     "vitest": "^4.0.0"
   },
