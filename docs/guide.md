@@ -65,7 +65,7 @@ nak req -k 31402 wss://relay.damus.io
 
 ## Live Example
 
-[jokes.trotters.dev](https://jokes.trotters.dev) is a live API announcing on Nostr.
+[jokes.forgesworn.dev](https://jokes.forgesworn.dev) is a live API announcing on Nostr.
 It uses toll-booth for L402 payments and 402-announce for discovery.
 
 ## Multiple Payment Methods

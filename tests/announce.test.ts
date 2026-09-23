@@ -415,13 +415,13 @@ describe('announceService', () => {
     }
 
     it('accepts public service URL', async () => {
-      const config = makeConfig({ urls: ['https://satgate.trotters.dev'] })
+      const config = makeConfig({ urls: ['https://satgate.forgesworn.dev'] })
       await expect(announceService(config)).resolves.toBeDefined()
     })
 
     it('allows event when at least one url is public', async () => {
       const config = makeConfig({
-        urls: ['http://192.168.1.1/api', 'https://satgate.trotters.dev'],
+        urls: ['http://192.168.1.1/api', 'https://satgate.forgesworn.dev'],
       })
       await expect(announceService(config)).resolves.toBeDefined()
     })
