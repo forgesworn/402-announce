@@ -10,3 +10,6 @@ coverage/
 *.pem
 *.key
 .npmrc
+
+# Internal planning notes
+docs/superpowers/
