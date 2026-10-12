@@ -1,0 +1,216 @@
+{
+  "fixture": "combined",
+  "now": 1800000300,
+  "description": {
+    "profile": "forgesworn-storage-service-v1",
+    "service_pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "identifier": "synthetic-storage",
+    "name": "Synthetic Wildbloom node",
+    "about": "Offline interoperability fixture; never a real storage offer.",
+    "origins": [
+      "https://storage.example/"
+    ],
+    "max_blob_bytes": 1073741824,
+    "observed_at": 1800000000,
+    "expires_at": 1800007200,
+    "state": "published",
+    "checkout": {
+      "protocol": "wildbloom-checkout-v1",
+      "origin": "https://storage.example/",
+      "network": "bitcoin",
+      "rails": [
+        "lightning",
+        "lnurlcash"
+      ],
+      "issuers": [
+        {
+          "id": "synthetic-mint",
+          "note_endpoint": "https://mint.example/cash",
+          "callback": "https://mint.example/cash/callback",
+          "mint_pubkey": "021111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "open-shelter",
+        "type": "free-mirror",
+        "revision": 1,
+        "availability": "accepting",
+        "operation": "mirror",
+        "authorisation": "bud-11",
+        "retention": "best-effort",
+        "eviction_policy": "Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused."
+      },
+      {
+        "id": "storage-small",
+        "type": "paid-storage",
+        "revision": 1,
+        "availability": "accepting",
+        "capacity_bytes": 10737418240,
+        "duration_seconds": 2592000,
+        "grace_seconds": 604800,
+        "price_msat": 100000,
+        "delivery_bytes": 21474836480,
+        "delivery_policy": "Package includes the stated delivery allowance; consult a fresh quote before buying.",
+        "retention_policy": "Retained until the purchased term and grace end; this is not a replication guarantee.",
+        "refund_policy": "Settled payments that cannot activate storage require operator refund or agreed fulfilment."
+      }
+    ]
+  },
+  "unsigned_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "https://storage.example/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lightning",
+        "bitcoin"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lnurlcash",
+        "bitcoin",
+        "mint.example"
+      ],
+      [
+        "price",
+        "open-shelter",
+        "0",
+        "sats"
+      ],
+      [
+        "price",
+        "storage-small",
+        "100",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"https://storage.example/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":{\"protocol\":\"wildbloom-checkout-v1\",\"origin\":\"https://storage.example/\",\"network\":\"bitcoin\",\"rails\":[\"lightning\",\"lnurlcash\"],\"issuers\":[{\"id\":\"synthetic-mint\",\"note_endpoint\":\"https://mint.example/cash\",\"callback\":\"https://mint.example/cash/callback\",\"mint_pubkey\":\"021111111111111111111111111111111111111111111111111111111111111111\"}]},\"services\":[{\"id\":\"open-shelter\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"free-mirror\",\"operation\":\"mirror\",\"authorisation\":\"bud-11\",\"retention\":\"best-effort\",\"eviction_policy\":\"Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\"},{\"id\":\"storage-small\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"paid-storage\",\"capacity_bytes\":10737418240,\"duration_seconds\":2592000,\"grace_seconds\":604800,\"price_msat\":100000,\"delivery_bytes\":21474836480,\"delivery_policy\":\"Package includes the stated delivery allowance; consult a fresh quote before buying.\",\"retention_policy\":\"Retained until the purchased term and grace end; this is not a replication guarantee.\",\"refund_policy\":\"Settled payments that cannot activate storage require operator refund or agreed fulfilment.\"}]},\"capabilities\":[{\"name\":\"open-shelter\",\"description\":\"Signed mirrors only; best-effort, evictable shelter. Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\",\"endpoint\":\"/mirror\"},{\"name\":\"storage-small\",\"description\":\"10737418240 ciphertext bytes for 2592000 seconds; 604800 seconds grace; 21474836480 delivery bytes. Retained until the purchased term and grace end; this is not a replication guarantee.\",\"endpoint\":\"/checkout/v1/offers\"}]}"
+  },
+  "signed_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "https://storage.example/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lightning",
+        "bitcoin"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lnurlcash",
+        "bitcoin",
+        "mint.example"
+      ],
+      [
+        "price",
+        "open-shelter",
+        "0",
+        "sats"
+      ],
+      [
+        "price",
+        "storage-small",
+        "100",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"https://storage.example/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":{\"protocol\":\"wildbloom-checkout-v1\",\"origin\":\"https://storage.example/\",\"network\":\"bitcoin\",\"rails\":[\"lightning\",\"lnurlcash\"],\"issuers\":[{\"id\":\"synthetic-mint\",\"note_endpoint\":\"https://mint.example/cash\",\"callback\":\"https://mint.example/cash/callback\",\"mint_pubkey\":\"021111111111111111111111111111111111111111111111111111111111111111\"}]},\"services\":[{\"id\":\"open-shelter\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"free-mirror\",\"operation\":\"mirror\",\"authorisation\":\"bud-11\",\"retention\":\"best-effort\",\"eviction_policy\":\"Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\"},{\"id\":\"storage-small\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"paid-storage\",\"capacity_bytes\":10737418240,\"duration_seconds\":2592000,\"grace_seconds\":604800,\"price_msat\":100000,\"delivery_bytes\":21474836480,\"delivery_policy\":\"Package includes the stated delivery allowance; consult a fresh quote before buying.\",\"retention_policy\":\"Retained until the purchased term and grace end; this is not a replication guarantee.\",\"refund_policy\":\"Settled payments that cannot activate storage require operator refund or agreed fulfilment.\"}]},\"capabilities\":[{\"name\":\"open-shelter\",\"description\":\"Signed mirrors only; best-effort, evictable shelter. Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\",\"endpoint\":\"/mirror\"},{\"name\":\"storage-small\",\"description\":\"10737418240 ciphertext bytes for 2592000 seconds; 604800 seconds grace; 21474836480 delivery bytes. Retained until the purchased term and grace end; this is not a replication guarantee.\",\"endpoint\":\"/checkout/v1/offers\"}]}",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "8eda9ef827d5e2969599cecfd5ce29ccc691fa2499e9d8ffc6dcc56eb16dbdc4",
+    "sig": "d656ff069491b629d978a929bdc21efa8a6d107e2ded8509dbef691308d3064e8407a05c45b1a469c855e366086b1d22e67056a19f9b64519bb3f5b54f3287d3"
+  },
+  "expected": {
+    "freshness": "current",
+    "state": "published",
+    "available_service_ids": [
+      "open-shelter",
+      "storage-small"
+    ]
+  }
+}

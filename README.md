@@ -1,5 +1,15 @@
 # 402-announce
 
+Experimental storage discovery now has a separate, key-free API for public paid
+packages and free mirror shelter. See the [version-1 contract](docs/storage-service-v1.md),
+[JSON Schema](schemas/storage-service-v1.schema.json) and
+[signed interoperability fixtures](fixtures/storage-v1/manifest.json).
+`buildStorageAnnouncement` creates an unsigned event for an external signer;
+`acceptSignedStorageAnnouncement` verifies the exact returned event, and
+`selectStorageAnnouncements` preserves expired/withdrawn replacement records.
+These APIs do not publish, contact storage nodes or purchase storage. The existing
+paid-API `announceService` contract is unchanged.
+
 **Nostr:** [`npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2`](https://njump.me/npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2)
 
 Announce HTTP 402 services on Nostr for decentralised discovery. Supports both L402 and x402 payment protocols.

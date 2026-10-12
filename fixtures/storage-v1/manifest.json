@@ -1,0 +1,51 @@
+{
+  "profile": "forgesworn-storage-service-v1",
+  "synthetic_only": true,
+  "cases": [
+    "paid.json",
+    "free.json",
+    "combined.json",
+    "free-onion.json",
+    "full.json",
+    "withdrawn.json",
+    "expired.json",
+    "reject-mismatched-author.json",
+    "reject-misleading-price.json",
+    "reject-duplicate-identifier.json",
+    "reject-missing-expiration.json",
+    "reject-fake-l402.json",
+    "reject-future-event.json",
+    "reject-secret-field.json",
+    "reject-free-direct-upload.json",
+    "reject-checkout-onion.json",
+    "reject-unbound-checkout-origin.json",
+    "reject-unsafe-integer.json",
+    "reject-incorrect-onion-checksum.json"
+  ],
+  "selection_cases": [
+    {
+      "inputs": [
+        "paid",
+        "full"
+      ],
+      "winner": "full",
+      "available_service_ids": []
+    },
+    {
+      "inputs": [
+        "paid",
+        "withdrawn"
+      ],
+      "winner": "withdrawn",
+      "available_service_ids": []
+    },
+    {
+      "inputs": [
+        "paid",
+        "expired"
+      ],
+      "winner": "expired",
+      "available_service_ids": []
+    }
+  ]
+}
