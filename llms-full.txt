@@ -285,4 +285,38 @@ Repository: https://github.com/forgesworn/402-announce
 npm: https://www.npmjs.com/package/402-announce
 Live dashboard: https://402.pub
 Licence: MIT
-Runtime dependency: nostr-tools
+Runtime dependencies: nostr-tools and @noble/hashes (v3 onion checksum validation)
+
+## Experimental Public Storage Profile
+
+The separate `forgesworn-storage-service-v1` contract supports public paid storage
+packages, free signed mirror shelter, and combined listings. It is a documented
+kind 31402 extension, not a ratified NIP/BUD. Full reference:
+docs/storage-service-v1.md. Schema: schemas/storage-service-v1.schema.json.
+Signed synthetic fixtures and selection/rejection cases:
+fixtures/storage-v1/manifest.json. These files ship in the npm package.
+
+Storage APIs take no private key and do no network access:
+- buildStorageAnnouncement(description, createdAt?) -> unsigned EventTemplate.
+- acceptSignedStorageAnnouncement(event, requestedTemplate, { now }) -> exact,
+  valid, current external signature; refuses signer rewrites.
+- parseStorageAnnouncement(event, { now, maxAgeSeconds?, clockSkewSeconds? }) ->
+  verified event, description and current/expired/stale freshness.
+- selectStorageAnnouncements(events, options) -> latest valid records per
+  pubkey + d, INCLUDING expired/withdrawn records to keep as session watermarks.
+- validateStorageDescription(value) -> strict copied public HTTP description.
+- validateStorageEndpointBinding(value, chosenListing, selectedOrigin, options)
+  -> fresh HTTP snapshot matched to signed service identity, listing and origin.
+
+Select newest before filtering expiry/availability. Keep the lower event ID on
+equal timestamps. A newer full/withdrawn/expired record must not resurrect an
+older offer. Coarse availability is self-reported admission, not a reservation
+or uptime proof. Free shelter is mirror-only, BUD-11-authorised, best effort and
+evictable. Paid prices are for the whole capacity/duration/delivery package.
+Paid checkout is available only at its explicit HTTPS origin; a mixed onion
+listing does not imply onion checkout. PMI `wildbloom-checkout` describes its
+actual order flow; never advertise it as L402 or generic payment headers.
+
+The legacy paid-API APIs are unchanged and still require payment methods.
+Native publication, /services/v1 serving, consumer UI and automatic purchasing
+are separate stages and are not implemented by these pure helpers.

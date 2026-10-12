@@ -1,0 +1,147 @@
+{
+  "fixture": "free-onion",
+  "now": 1800000300,
+  "description": {
+    "profile": "forgesworn-storage-service-v1",
+    "service_pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "identifier": "synthetic-storage",
+    "name": "Synthetic Wildbloom node",
+    "about": "Offline interoperability fixture; never a real storage offer.",
+    "origins": [
+      "http://aibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibejsqd.onion/"
+    ],
+    "max_blob_bytes": 1073741824,
+    "observed_at": 1800000000,
+    "expires_at": 1800007200,
+    "state": "published",
+    "checkout": null,
+    "services": [
+      {
+        "id": "open-shelter",
+        "type": "free-mirror",
+        "revision": 1,
+        "availability": "accepting",
+        "operation": "mirror",
+        "authorisation": "bud-11",
+        "retention": "best-effort",
+        "eviction_policy": "Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused."
+      }
+    ]
+  },
+  "unsigned_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "http://aibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibejsqd.onion/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "price",
+        "open-shelter",
+        "0",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"http://aibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibejsqd.onion/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":null,\"services\":[{\"id\":\"open-shelter\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"free-mirror\",\"operation\":\"mirror\",\"authorisation\":\"bud-11\",\"retention\":\"best-effort\",\"eviction_policy\":\"Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\"}]},\"capabilities\":[{\"name\":\"open-shelter\",\"description\":\"Signed mirrors only; best-effort, evictable shelter. Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\",\"endpoint\":\"/mirror\"}]}"
+  },
+  "signed_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "http://aibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibejsqd.onion/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "price",
+        "open-shelter",
+        "0",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"http://aibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibaeaqcaibejsqd.onion/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":null,\"services\":[{\"id\":\"open-shelter\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"free-mirror\",\"operation\":\"mirror\",\"authorisation\":\"bud-11\",\"retention\":\"best-effort\",\"eviction_policy\":\"Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\"}]},\"capabilities\":[{\"name\":\"open-shelter\",\"description\":\"Signed mirrors only; best-effort, evictable shelter. Guest mirrors can be evicted under storage pressure; direct unknown uploads are refused.\",\"endpoint\":\"/mirror\"}]}",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "345d5d67ee1db6ae88bc8d97bea5e0ee5d101eda817c2fccafb57f9588e8e04f",
+    "sig": "26687964a9655b2155978650850a85a08d8d5d1b67e0e999c4f90c76a7065fedbb3f2a26584d5ca0276cc41dfe81119b18e3c6b3881af4e1a9513f4006007593"
+  },
+  "expected": {
+    "freshness": "current",
+    "state": "published",
+    "available_service_ids": [
+      "open-shelter"
+    ]
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "fixture": "paid",
+  "now": 1800000300,
+  "description": {
+    "profile": "forgesworn-storage-service-v1",
+    "service_pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "identifier": "synthetic-storage",
+    "name": "Synthetic Wildbloom node",
+    "about": "Offline interoperability fixture; never a real storage offer.",
+    "origins": [
+      "https://storage.example/"
+    ],
+    "max_blob_bytes": 1073741824,
+    "observed_at": 1800000000,
+    "expires_at": 1800007200,
+    "state": "published",
+    "checkout": {
+      "protocol": "wildbloom-checkout-v1",
+      "origin": "https://storage.example/",
+      "network": "bitcoin",
+      "rails": [
+        "lightning",
+        "lnurlcash"
+      ],
+      "issuers": [
+        {
+          "id": "synthetic-mint",
+          "note_endpoint": "https://mint.example/cash",
+          "callback": "https://mint.example/cash/callback",
+          "mint_pubkey": "021111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    },
+    "services": [
+      {
+        "id": "storage-small",
+        "type": "paid-storage",
+        "revision": 1,
+        "availability": "accepting",
+        "capacity_bytes": 10737418240,
+        "duration_seconds": 2592000,
+        "grace_seconds": 604800,
+        "price_msat": 100000,
+        "delivery_bytes": 21474836480,
+        "delivery_policy": "Package includes the stated delivery allowance; consult a fresh quote before buying.",
+        "retention_policy": "Retained until the purchased term and grace end; this is not a replication guarantee.",
+        "refund_policy": "Settled payments that cannot activate storage require operator refund or agreed fulfilment."
+      }
+    ]
+  },
+  "unsigned_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "https://storage.example/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lightning",
+        "bitcoin"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lnurlcash",
+        "bitcoin",
+        "mint.example"
+      ],
+      [
+        "price",
+        "storage-small",
+        "100",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"https://storage.example/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":{\"protocol\":\"wildbloom-checkout-v1\",\"origin\":\"https://storage.example/\",\"network\":\"bitcoin\",\"rails\":[\"lightning\",\"lnurlcash\"],\"issuers\":[{\"id\":\"synthetic-mint\",\"note_endpoint\":\"https://mint.example/cash\",\"callback\":\"https://mint.example/cash/callback\",\"mint_pubkey\":\"021111111111111111111111111111111111111111111111111111111111111111\"}]},\"services\":[{\"id\":\"storage-small\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"paid-storage\",\"capacity_bytes\":10737418240,\"duration_seconds\":2592000,\"grace_seconds\":604800,\"price_msat\":100000,\"delivery_bytes\":21474836480,\"delivery_policy\":\"Package includes the stated delivery allowance; consult a fresh quote before buying.\",\"retention_policy\":\"Retained until the purchased term and grace end; this is not a replication guarantee.\",\"refund_policy\":\"Settled payments that cannot activate storage require operator refund or agreed fulfilment.\"}]},\"capabilities\":[{\"name\":\"storage-small\",\"description\":\"10737418240 ciphertext bytes for 2592000 seconds; 604800 seconds grace; 21474836480 delivery bytes. Retained until the purchased term and grace end; this is not a replication guarantee.\",\"endpoint\":\"/checkout/v1/offers\"}]}"
+  },
+  "signed_event": {
+    "kind": 31402,
+    "created_at": 1800000000,
+    "tags": [
+      [
+        "d",
+        "synthetic-storage"
+      ],
+      [
+        "name",
+        "Synthetic Wildbloom node"
+      ],
+      [
+        "url",
+        "https://storage.example/"
+      ],
+      [
+        "about",
+        "Offline interoperability fixture; never a real storage offer."
+      ],
+      [
+        "source",
+        "self"
+      ],
+      [
+        "status",
+        "active"
+      ],
+      [
+        "expiration",
+        "1800007200"
+      ],
+      [
+        "t",
+        "storage"
+      ],
+      [
+        "t",
+        "wildbloom"
+      ],
+      [
+        "t",
+        "forgesworn-storage-service-v1"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lightning",
+        "bitcoin"
+      ],
+      [
+        "pmi",
+        "wildbloom-checkout",
+        "lnurlcash",
+        "bitcoin",
+        "mint.example"
+      ],
+      [
+        "price",
+        "storage-small",
+        "100",
+        "sats"
+      ]
+    ],
+    "content": "{\"storage\":{\"profile\":\"forgesworn-storage-service-v1\",\"service_pubkey\":\"1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f\",\"identifier\":\"synthetic-storage\",\"name\":\"Synthetic Wildbloom node\",\"about\":\"Offline interoperability fixture; never a real storage offer.\",\"origins\":[\"https://storage.example/\"],\"max_blob_bytes\":1073741824,\"observed_at\":1800000000,\"expires_at\":1800007200,\"state\":\"published\",\"checkout\":{\"protocol\":\"wildbloom-checkout-v1\",\"origin\":\"https://storage.example/\",\"network\":\"bitcoin\",\"rails\":[\"lightning\",\"lnurlcash\"],\"issuers\":[{\"id\":\"synthetic-mint\",\"note_endpoint\":\"https://mint.example/cash\",\"callback\":\"https://mint.example/cash/callback\",\"mint_pubkey\":\"021111111111111111111111111111111111111111111111111111111111111111\"}]},\"services\":[{\"id\":\"storage-small\",\"revision\":1,\"availability\":\"accepting\",\"type\":\"paid-storage\",\"capacity_bytes\":10737418240,\"duration_seconds\":2592000,\"grace_seconds\":604800,\"price_msat\":100000,\"delivery_bytes\":21474836480,\"delivery_policy\":\"Package includes the stated delivery allowance; consult a fresh quote before buying.\",\"retention_policy\":\"Retained until the purchased term and grace end; this is not a replication guarantee.\",\"refund_policy\":\"Settled payments that cannot activate storage require operator refund or agreed fulfilment.\"}]},\"capabilities\":[{\"name\":\"storage-small\",\"description\":\"10737418240 ciphertext bytes for 2592000 seconds; 604800 seconds grace; 21474836480 delivery bytes. Retained until the purchased term and grace end; this is not a replication guarantee.\",\"endpoint\":\"/checkout/v1/offers\"}]}",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "e10c107192cebcb9fcbfdafb06593ae52b2708498ae76bf21ed3bb88869003a3",
+    "sig": "7fa16e7aa67afde51510ff75933b7882c01fe176feb38a6db786db16a0ff0018c61c0e0fcbc210939e40d6fdf20d174e83c957c389ab8c2aad324a4159305c7b"
+  },
+  "expected": {
+    "freshness": "current",
+    "state": "published",
+    "available_service_ids": [
+      "storage-small"
+    ]
+  }
+}
