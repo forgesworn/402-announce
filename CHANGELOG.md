@@ -7,6 +7,14 @@
 
 # [2.1.0](https://github.com/forgesworn/402-announce/compare/v2.0.1...v2.1.0) (2026-03-24)
 
+## 2.3.0 (2026-10-12)
+
+### Features
+
+- define public storage announcement profile and fixtures (#44)
+
+
+
 ## 2.2.0 (2026-08-22)
 
 ### Features
