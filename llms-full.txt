@@ -35,7 +35,7 @@ AnnounceConfig:
   - relays (string[], required): Relay URLs (must start with wss:// or ws://). Maximum 50.
   - identifier (string, required): Unique listing ID, used as the Nostr `d` tag. Same pubkey + identifier = same listing.
   - name (string, required): Human-readable service name
-  - urls (string[], required): Transport endpoint URLs (1–10 entries, each max 2048 characters). One `url` tag per entry in the event. Clients try in order.
+  - urls (string[], required): Transport endpoint URLs (1–10 unique entries, each max 2048 characters, parseable by new URL(), no control characters, and not using the schemes data:, file:, javascript:, blob: or vbscript:). One `url` tag per entry in the event. Clients try in order. announceService additionally requires at least one public URL (see Behaviour).
   - about (string, required): Short description of the service
   - pricing (PricingDef[], required): Per-capability pricing. Each entry: { capability, price, currency }
   - paymentMethods (string[][], required): Accepted payment methods. Each entry is [rail, ...params]
@@ -47,7 +47,7 @@ AnnounceConfig:
 PricingDef:
   - capability (string): Capability name (e.g. "get_joke", "chat", "inference")
   - price (number): Price amount (integer or fractional)
-  - currency (string): Currency unit (e.g. "sats", "USD")
+  - currency (string): Currency unit label (e.g. "sats", "USD"). Free-form: any non-blank string up to 32 characters without control characters. It is not checked against a list of allowed values, and clients decide which units they understand.
 
 CapabilityDef:
   - name (string): Capability name
@@ -64,19 +64,20 @@ CapabilityDef:
 **Behaviour:**
   - Validates secretKey (must be 64-char hex) and relay URLs (must be wss:// or ws://)
   - Rejects relay URLs pointing to private/loopback addresses (SSRF prevention)
-  - Rejects service configs where all urls are private/loopback (at least one public URL required)
+  - Rejects service configs where all urls are private/loopback (at least one public URL required). An http/https URL is public if isPrivateHost does not match its hostname; .onion hostnames and non-http(s) schemes count as public. Other entries may be private
   - Connects to all relays in parallel with a 10-second timeout per relay
   - Individual relay failures are logged as warnings but do not reject the promise
-  - If no relay accepts the event, a warning is emitted (but the promise still resolves)
+  - If no relay accepts the event, `[402-announce] No relays accepted the event` is logged and the promise still resolves with the eventId of the signed event, which no relay stored. The Announcement does not report how many relays accepted it, so the warning is the only signal. To confirm storage, use buildAnnounceEvent and publish yourself, checking each publish result
   - Secret key bytes are zeroised after signing
   - Warns on insecure ws:// relay URLs
 
-**Throws:**
+**Rejects** (announceService is async, so these are promise rejections, not synchronous throws):
   - If secretKey is not a 64-character hex string
   - If relays array is empty or contains more than 50 entries
   - If any relay URL does not start with wss:// or ws://
   - If any relay URL points to a private/loopback address
   - If all service URLs are private/loopback addresses
+  - If a service URL does not parse, or any buildAnnounceEvent validation fails (see below)
 
 ### buildAnnounceEvent(secretKeyHex: string, config: Omit<AnnounceConfig, 'relays'>): VerifiedEvent
 
@@ -84,15 +85,17 @@ Lower-level function: builds and signs the kind 31402 event without publishing. 
 
 **Returns** a nostr-tools VerifiedEvent ready for relay publication.
 
-Secret key bytes are zeroised after signing (via try/finally). Unlike announceService(), this function does not enforce the "at least one public URL" rule — it is a pure serialisation utility.
+Throws synchronously on invalid input. Secret key bytes are zeroised after signing (via try/finally). Unlike announceService(), this function does not enforce the "at least one public URL" rule, as it is a pure serialisation utility.
 
 ### isPrivateHost(hostname: string): boolean
 
-Utility export. Returns true if the hostname is a private, loopback, link-local, or reserved address (IPv4 or IPv6). Used internally for SSRF prevention; exported for consumers who need the same guard.
+Utility export. Returns true if the hostname is a private, loopback, link-local, or reserved address (IPv4 or IPv6). Used internally for SSRF prevention; exported for consumers who need the same guard. Takes a bare hostname, not a URL.
+
+Returns true for: localhost and *.localhost; IPv6 ::1, ::, fe80::/10, fc00::/7, Teredo 2001:0000::/32, and IPv4-mapped, IPv4-compatible or 6to4 forms embedding a private IPv4; IPv4 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.88.99.0/24, 192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 240.0.0.0/4; and octal, hexadecimal, single-integer or two/three-part shorthand IPv4 spellings. It inspects the string only (no DNS resolution) and does not flag multicast such as 224.0.0.1.
 
 ### Constants
 
-- L402_ANNOUNCE_KIND = 31402 — The Nostr event kind for service announcements
+- L402_ANNOUNCE_KIND = 31402: the Nostr event kind for service announcements
 
 ### Exported types
 
@@ -262,11 +265,11 @@ nak req -k 31402 -t t=ai wss://relay.damus.io
 - **Relay trust**: Relays are untrusted infrastructure. Events are cryptographically signed — relay operators cannot forge announcements. However, relays can choose not to store or serve your events.
 - **Connection timeouts**: Relay connections time out after 10 seconds to prevent indefinite hangs.
 - **Graceful degradation**: If some relays fail, the event is still published to the others. A warning is emitted only if no relay accepts the event.
-- **Input limits**: URLs max 2048 chars, max 10 service URLs, max 50 relays, JSON schema depth capped at 10, control characters rejected in all string fields.
+- **Input limits**: URLs max 2048 chars (data:, file:, javascript:, blob: and vbscript: schemes rejected, duplicates rejected), max 10 service URLs, max 50 relays, JSON schema depth capped at 10, control characters rejected in all string fields.
 
 ## Error Handling
 
-The library throws synchronously for invalid configuration:
+Invalid configuration is rejected: buildAnnounceEvent throws synchronously, and announceService (an async function) rejects its promise. Cases:
 - secretKey not 64-char hex → Error
 - Empty relays array or more than 50 relays → Error
 - Invalid relay URL (not wss:// or ws://) → Error
@@ -277,7 +280,7 @@ The library throws synchronously for invalid configuration:
 Relay-level failures during publication are handled gracefully:
 - Connection timeouts → warning logged, other relays still tried
 - Publish rejections → warning logged, other relays still tried
-- All relays fail → warning logged, promise resolves with eventId from the signed event
+- All relays fail → warning logged, promise resolves with eventId from the signed event even though no relay accepted it (the Announcement carries no accepted count)
 
 ## Source
 
@@ -296,7 +299,7 @@ docs/storage-service-v1.md. Schema: schemas/storage-service-v1.schema.json.
 Signed synthetic fixtures and selection/rejection cases:
 fixtures/storage-v1/manifest.json. These files ship in the npm package.
 
-Storage APIs take no private key and do no network access:
+Storage APIs take no private key and do no network access. All six functions are exported from the `402-announce/storage` subpath and from the package root. The subpath carries only these six functions and the ParsedStorageAnnouncement type; the STORAGE_* constants and the storage description types (StorageServiceDescription, StorageReadOptions and others) are root-only. The package is ESM-only (no `require` export condition). Options are StorageReadOptions = { now: number (Unix seconds); maxAgeSeconds?: number; clockSkewSeconds?: number }. Invalid input throws Error('Invalid storage service profile.'); selectStorageAnnouncements skips invalid records instead but still throws for invalid options or more than 512 records.
 - buildStorageAnnouncement(description, createdAt?) -> unsigned EventTemplate.
 - acceptSignedStorageAnnouncement(event, requestedTemplate, { now }) -> exact,
   valid, current external signature; refuses signer rewrites.
@@ -305,8 +308,54 @@ Storage APIs take no private key and do no network access:
 - selectStorageAnnouncements(events, options) -> latest valid records per
   pubkey + d, INCLUDING expired/withdrawn records to keep as session watermarks.
 - validateStorageDescription(value) -> strict copied public HTTP description.
-- validateStorageEndpointBinding(value, chosenListing, selectedOrigin, options)
+- validateStorageEndpointBinding(value, announcement: ParsedStorageAnnouncement, selectedOrigin, options)
   -> fresh HTTP snapshot matched to signed service identity, listing and origin.
+
+Flow: build (unsigned) -> external signer -> accept -> select -> bind to endpoint. Runnable example, with a throwaway local key standing in for the external signer:
+
+```typescript
+import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure'
+import {
+  acceptSignedStorageAnnouncement,
+  buildStorageAnnouncement,
+  selectStorageAnnouncements,
+  validateStorageEndpointBinding,
+} from '402-announce/storage'
+
+const now = Math.floor(Date.now() / 1000)
+const signerKey = generateSecretKey() // stand-in for an external signer
+
+const description = {
+  profile: 'forgesworn-storage-service-v1',
+  service_pubkey: getPublicKey(signerKey),
+  identifier: 'open-shelter-node',
+  name: 'Open shelter node',
+  about: 'Best-effort mirror shelter for signed blobs.',
+  origins: ['https://storage.example/'],
+  max_blob_bytes: 1073741824,
+  observed_at: now,
+  expires_at: now + 7200,
+  state: 'published',
+  checkout: null,
+  services: [{
+    id: 'open-shelter',
+    type: 'free-mirror',
+    revision: 1,
+    availability: 'accepting',
+    operation: 'mirror',
+    authorisation: 'bud-11',
+    retention: 'best-effort',
+    eviction_policy: 'Guest mirrors can be evicted under storage pressure.',
+  }],
+}
+
+const requested = buildStorageAnnouncement(description)               // 1. unsigned template
+const signed = finalizeEvent(requested, signerKey)                    // 2. external signature
+const accepted = acceptSignedStorageAnnouncement(signed, requested, { now }) // 3. exact, current
+const listings = selectStorageAnnouncements([accepted.event], { now })       // 4. newest per listing
+const fetched = description // stands in for a freshly fetched GET /services/v1 body
+const current = validateStorageEndpointBinding(fetched, listings[0], 'https://storage.example/', { now }) // 5.
+```
 
 Select newest before filtering expiry/availability. Keep the lower event ID on
 equal timestamps. A newer full/withdrawn/expired record must not resurrect an

@@ -22,18 +22,22 @@ This library uses kind 31402 for **L402/x402 service announcements** (paid API d
 
 Paid-API exports:
 
-- `announceService(config)` — build, sign, and publish to relays. Returns `{ eventId, pubkey, close() }`.
+- `announceService(config)`: build, sign, and publish to relays. Returns `{ eventId, pubkey, close() }`. Invalid config rejects the promise. Relay failures never reject: if every relay fails it still resolves with the `eventId` of the signed event (no relay accepted it) and logs a warning; the handle does not report how many relays accepted.
 - `buildAnnounceEvent(secretKey, config)` — build and sign without publishing. Returns a `VerifiedEvent`.
-- `isPrivateHost(hostname)` — utility: returns true if hostname is a private/loopback address (SSRF guard).
+- `isPrivateHost(hostname)`: utility that returns true if hostname is a private/loopback/link-local/reserved address (SSRF guard). String check only, no DNS resolution.
 
-Exported constant: `L402_ANNOUNCE_KIND = 31402`
+Exported constant: `L402_ANNOUNCE_KIND = 31402`. Exported types: `AnnounceConfig`, `Announcement`, `PricingDef` (`capability`, `price`, `currency`), `CapabilityDef` (`name`, `description`, optional `endpoint`, `schema`, `outputSchema`). `currency` is a free-form string (non-blank, up to 32 characters), not an enumeration.
 
-Experimental storage extension: `buildStorageAnnouncement`,
+URL rules for `urls` (1-10 unique entries): each must parse with `new URL()`, be at most 2048 characters, and not use `data:`, `file:`, `javascript:`, `blob:` or `vbscript:`. `announceService` also needs at least one public URL (http/https host not matched by `isPrivateHost`, a `.onion` host, or a non-http scheme); `buildAnnounceEvent` allows private hosts.
+
+Module format: ESM-only, no `require` export condition. Use `import` (or `await import()` from CommonJS).
+
+Experimental storage extension, exported from `402-announce/storage` (and the package root): `buildStorageAnnouncement`,
 `acceptSignedStorageAnnouncement`, `parseStorageAnnouncement`,
 `selectStorageAnnouncements`, `validateStorageDescription` and
 `validateStorageEndpointBinding`. These are pure, key-free functions for paid,
 free-mirror and combined storage descriptions. They do not publish, contact a
-node or purchase storage. Contract: docs/storage-service-v1.md; machine schema:
+node or purchase storage. Flow: build (unsigned) -> external signer -> accept -> select -> bind to endpoint; the `402-announce/storage` subpath carries only the six functions, while `STORAGE_*` constants and storage types are root-only. Contract: docs/storage-service-v1.md; machine schema:
 schemas/storage-service-v1.schema.json; signed fixture manifest:
 fixtures/storage-v1/manifest.json. Native publisher and consumer UI remain separate.
 
