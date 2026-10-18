@@ -7,6 +7,14 @@
 
 # [2.1.0](https://github.com/forgesworn/402-announce/compare/v2.0.1...v2.1.0) (2026-03-24)
 
+## 2.3.1 (2026-10-18)
+
+### Bug Fixes
+
+- align README, llms files and AGENTS.md with the source (#46) (docs)
+
+
+
 ## 2.3.0 (2026-10-12)
 
 ### Features
