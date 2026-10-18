@@ -45,6 +45,8 @@ Your API publishes a service announcement to Nostr relays. AI agents (via [402-m
 npm install 402-announce
 ```
 
+402-announce is ESM-only. It ships no CommonJS build and its `exports` map has no `require` condition, so `require('402-announce')` fails with `ERR_PACKAGE_PATH_NOT_EXPORTED`. Use `import`, or `await import('402-announce')` from CommonJS.
+
 ```typescript
 import { announceService } from '402-announce'
 
@@ -93,9 +95,11 @@ const handle = await announceService({
 })
 ```
 
-Each URL becomes a separate `url` tag in the kind 31402 event. Clients try them in order and use whichever they can reach. `urls` accepts 1–10 entries; any parseable URL is valid.
+Each URL becomes a separate `url` tag in the kind 31402 event. Clients try them in order and use whichever they can reach.
 
-See [`examples/`](./examples) for runnable scripts.
+`urls` accepts 1–10 entries. Not every parseable URL is accepted: see [URL and relay validation](#url-and-relay-validation).
+
+See the [`examples/`](https://github.com/forgesworn/402-announce/tree/main/examples) directory in the GitHub repository for runnable scripts. It is not included in the npm package.
 
 ## How it fits together
 
@@ -138,7 +142,7 @@ flowchart LR
 - Builds and signs kind 31402 Nostr events
 - Publishes to one or more Nostr relays in parallel
 - Zeroises secret key bytes after use
-- Degrades gracefully when individual relays fail
+- Degrades gracefully when individual relays fail (if every relay fails it still resolves; see [`announceService`](#announceserviceconfig-promiseannouncement))
 - Provides a `close()` handle for clean disconnection
 
 ## What it does not do
@@ -154,13 +158,51 @@ flowchart LR
 High-level function that builds, signs, and publishes the event to multiple relays.
 
 **Returns** an `Announcement` handle:
-- `eventId` — the published Nostr event ID
-- `pubkey` — the Nostr pubkey derived from your secret key
-- `close()` — disconnect from all relays
+- `eventId`: the ID of the signed Nostr event
+- `pubkey`: the Nostr pubkey derived from your secret key
+- `close()`: disconnect from all relays (synchronous; call it on shutdown to avoid leaking WebSockets)
+
+**Rejects** (it is an `async` function, so these are promise rejections) when the config is invalid: a `secretKey` that is not 64 hex characters, an empty relay list, more than 50 relays, a relay URL that is not `ws://` or `wss://`, has credentials or points at a private or loopback host, a service `urls` list with no public URL, or any `buildAnnounceEvent` validation failure.
+
+**Relay failures never reject.** Each relay is tried in parallel with a 10-second connect timeout, and a failure is logged with `console.warn`. If every relay fails, `announceService` still resolves with the `eventId` of the signed event, even though no relay accepted it, and logs `[402-announce] No relays accepted the event`. The `Announcement` handle does not report how many relays accepted the event, so the warning is the only signal. If you need to know that at least one relay stored the event, call `buildAnnounceEvent` and publish it yourself, checking each `relay.publish()` result.
 
 ### `buildAnnounceEvent(secretKey, config): VerifiedEvent`
 
-Lower-level function that builds and signs the event without publishing. Useful if you manage relay connections yourself.
+Lower-level function that builds and signs the event without publishing. Useful if you manage relay connections yourself. `config` is an `AnnounceConfig` without `relays`. It throws synchronously on invalid input and does not apply the "at least one public URL" rule.
+
+### `isPrivateHost(hostname): boolean`
+
+The SSRF guard that `announceService` applies to relay and service URLs, exported for your own use. It takes a bare hostname (not a URL) and returns `true` for:
+
+- `localhost`, `*.localhost`
+- IPv6 `::1`, `::`, link-local `fe80::/10`, unique-local `fc00::/7`, Teredo `2001:0000::/32`, and IPv4-mapped, IPv4-compatible or 6to4 forms that embed a private IPv4 address
+- IPv4 `0.0.0.0/8`, `10.0.0.0/8`, `100.64.0.0/10`, `127.0.0.0/8`, `169.254.0.0/16`, `172.16.0.0/12`, `192.0.0.0/24`, `192.0.2.0/24`, `192.88.99.0/24`, `192.168.0.0/16`, `198.18.0.0/15`, `198.51.100.0/24`, `203.0.113.0/24` and `240.0.0.0/4`
+- octal, hexadecimal, single-integer and two- or three-part shorthand IPv4 spellings (for example `0x7f000001`, `2130706433`, `127.1`)
+
+It inspects the string only and never resolves DNS. It does not flag multicast addresses such as `224.0.0.1`.
+
+### Constants and types
+
+- `L402_ANNOUNCE_KIND`: the event kind, `31402`
+- `AnnounceConfig`, `Announcement`, `PricingDef`, `CapabilityDef`: type-only exports
+
+```typescript
+interface PricingDef {
+  capability: string // 1-64 characters, no control characters
+  price: number      // finite and non-negative
+  currency: string   // any non-blank string up to 32 characters, no control characters
+}
+
+interface CapabilityDef {
+  name: string         // up to 128 characters
+  description: string  // up to 4096 characters
+  endpoint?: string    // starts with '/', 'http://' or 'https://'; up to 2048 characters
+  schema?: unknown     // JSON Schema for the input
+  outputSchema?: unknown // JSON Schema for the output
+}
+```
+
+`currency` is a free-form label, not an enumeration: the library does not check it against a list of allowed values, and `'sats'` is simply the value used throughout this documentation. Whether a client understands another unit is up to that client. `pricing` takes 1–100 entries and `capabilities` at most 100. The whole event content may be at most 64 KiB and 20 levels of nesting.
 
 ### Config options
 
@@ -170,7 +212,7 @@ Lower-level function that builds and signs the event without publishing. Useful 
 | `relays`         | `string[]`        | yes      | Relay URLs (`wss://` or `ws://`)               |
 | `identifier`     | `string`          | yes      | Unique listing ID (Nostr `d` tag)              |
 | `name`           | `string`          | yes      | Human-readable service name                    |
-| `urls`           | `string[]`        | yes      | HTTP endpoints for the service (1–10 entries, any parseable URL) |
+| `urls`           | `string[]`        | yes      | Transport endpoints for the service (1–10 unique entries, each up to 2048 characters; some schemes are denied and `announceService` needs one public URL, see [URL and relay validation](#url-and-relay-validation)) |
 | `about`          | `string`          | yes      | Short description                              |
 | `pricing`        | `PricingDef[]`    | yes      | Per-capability pricing                         |
 | `paymentMethods` | `string[][]`      | yes      | Accepted payment methods (each entry is `[rail, ...params]`) |
@@ -178,6 +220,106 @@ Lower-level function that builds and signs the event without publishing. Useful 
 | `topics`         | `string[]`        | no       | Topic tags for filtering                       |
 | `capabilities`   | `CapabilityDef[]` | no       | Capability details (stored in event content)   |
 | `version`        | `string`          | no       | Service version (stored in event content)      |
+
+### URL and relay validation
+
+Both `buildAnnounceEvent` and `announceService` reject a `urls` entry that:
+
+- is not parseable by `new URL()`, is longer than 2048 characters or contains control characters
+- uses the scheme `data:`, `file:`, `javascript:`, `blob:` or `vbscript:`
+- duplicates another entry
+
+`buildAnnounceEvent` stops there and accepts private hosts, because it only serialises. `announceService` also requires at least one public URL: an `http:` or `https:` URL whose hostname `isPrivateHost` does not match, a `.onion` hostname, or any other scheme (the last two skip the host check). The remaining entries may be private.
+
+Relay URLs are stricter: `ws://` or `wss://` only, no embedded credentials, no private or loopback host, and at most 50 after de-duplication. A `ws://` relay logs a warning.
+
+These checks read the hostname text only. There is no DNS resolution, so DNS rebinding is not caught; deploy behind network-level egress controls.
+
+## Storage announcement API
+
+The storage extension described at the top of this README is key-free: it builds unsigned events, verifies events that an external signer returns, and selects between them. It does not publish, contact storage nodes or purchase storage, and it is separate from `announceService`. Do not pass a storage description to `announceService` or `buildAnnounceEvent`.
+
+Import path. The six functions are exported from the `402-announce/storage` subpath and also from the package root:
+
+```typescript
+import { buildStorageAnnouncement } from '402-announce/storage'
+// or: import { buildStorageAnnouncement } from '402-announce'
+```
+
+The subpath carries only the six functions and the `ParsedStorageAnnouncement` type. The constants (`STORAGE_PROFILE`, `STORAGE_SERVICE_PATH`, `STORAGE_MAX_EVENT_BYTES`, `STORAGE_MAX_TTL_SECONDS`, `STORAGE_DEFAULT_MAX_AGE_SECONDS`) and the description types (such as `StorageServiceDescription` and `StorageReadOptions`) are exported from the root only.
+
+| Function | Signature | Purpose |
+|----------|-----------|---------|
+| `buildStorageAnnouncement` | `(value: unknown, createdAt?: number) => EventTemplate` | Validate a description and return an unsigned kind 31402 event for an external signer |
+| `acceptSignedStorageAnnouncement` | `(value: unknown, requested: EventTemplate, options: StorageReadOptions) => ParsedStorageAnnouncement` | Verify the returned event and accept it only if it is current and identical to `requested` (same kind, `created_at`, tags and content) |
+| `parseStorageAnnouncement` | `(value: unknown, options: StorageReadOptions) => ParsedStorageAnnouncement` | Verify a signed event and return it with its description and a `freshness` of `'current'`, `'stale'` or `'expired'` |
+| `selectStorageAnnouncements` | `(values: readonly unknown[], options: StorageReadOptions) => ParsedStorageAnnouncement[]` | Keep the newest valid record per pubkey and `d` tag, including expired and withdrawn ones; invalid records are skipped |
+| `validateStorageDescription` | `(value: unknown) => StorageServiceDescription` | Strictly validate and copy a public HTTP description |
+| `validateStorageEndpointBinding` | `(value: unknown, announcement: ParsedStorageAnnouncement, selectedOrigin: string, options: StorageReadOptions) => StorageServiceDescription` | Check a freshly fetched description against the signed identity, listing and chosen origin |
+
+`StorageReadOptions` is `{ now: number; maxAgeSeconds?: number; clockSkewSeconds?: number }`, with `now` in Unix seconds. The functions throw `Error('Invalid storage service profile.')` on invalid input. `selectStorageAnnouncements` skips invalid records instead, but still throws for invalid options or more than 512 records.
+
+The flow is build, sign externally, accept, select, then bind to the endpoint. The example below uses a throwaway local key as the stand-in for the external signer (`nostr-tools` is a dependency of this package). In production the key never enters this code.
+
+```typescript
+import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure'
+import {
+  acceptSignedStorageAnnouncement,
+  buildStorageAnnouncement,
+  selectStorageAnnouncements,
+  validateStorageEndpointBinding,
+} from '402-announce/storage'
+
+const now = Math.floor(Date.now() / 1000)
+const signerKey = generateSecretKey() // stand-in for an external signer
+
+const description = {
+  profile: 'forgesworn-storage-service-v1',
+  service_pubkey: getPublicKey(signerKey),
+  identifier: 'open-shelter-node',
+  name: 'Open shelter node',
+  about: 'Best-effort mirror shelter for signed blobs.',
+  origins: ['https://storage.example/'],
+  max_blob_bytes: 1073741824,
+  observed_at: now,
+  expires_at: now + 7200,
+  state: 'published',
+  checkout: null,
+  services: [{
+    id: 'open-shelter',
+    type: 'free-mirror',
+    revision: 1,
+    availability: 'accepting',
+    operation: 'mirror',
+    authorisation: 'bud-11',
+    retention: 'best-effort',
+    eviction_policy: 'Guest mirrors can be evicted under storage pressure.',
+  }],
+}
+
+// 1. Build the unsigned event. No key or network access.
+const requested = buildStorageAnnouncement(description)
+
+// 2. Sign it externally. The signer must not change the template.
+const signed = finalizeEvent(requested, signerKey)
+
+// 3. Accept the returned event. Throws if the signature, freshness or template differ.
+const accepted = acceptSignedStorageAnnouncement(signed, requested, { now })
+// Publishing accepted.event to relays is a separate step that you perform.
+
+// 4. Later, a reader selects the newest record per listing from relay results.
+const listings = selectStorageAnnouncements([accepted.event], { now })
+const [listing] = listings
+// Keep `listings` as watermarks. Show only current, published, accepting services.
+
+// 5. After separately fetching the node's description (GET /services/v1, here reusing
+//    `description`), check it matches the signed listing and the chosen origin.
+const fetched = description
+const current = validateStorageEndpointBinding(fetched, listing, 'https://storage.example/', { now })
+console.log(current.identifier)
+```
+
+Paid storage listings add a `checkout` object and `paid-storage` services. See the [version-1 contract](docs/storage-service-v1.md) for every field and the [signed fixtures](fixtures/storage-v1/manifest.json) for paid, combined, withdrawn and expired examples.
 
 ## Announce flow
 
@@ -254,12 +396,12 @@ Each `paymentMethods` entry is an array where the first element is the rail iden
 
 ### Content
 
-The event content is a JSON object with optional fields:
+The event content is a JSON object with optional fields. Each capability may also carry `endpoint`, `schema` and `outputSchema` (see `CapabilityDef` above):
 
 ```json
 {
   "capabilities": [
-    { "name": "get_joke", "description": "Returns a random joke" }
+    { "name": "get_joke", "description": "Returns a random joke", "endpoint": "/api/joke" }
   ],
   "version": "1.0.0"
 }
@@ -280,7 +422,8 @@ In short: same service + different network paths → one event with multiple `ur
 - Secret key bytes are zeroised immediately after signing (in both `announceService` and `buildAnnounceEvent`)
 - Never log or persist the secret key — pass it in and let the library handle cleanup
 - Relay connections use a 10-second timeout to prevent hanging
-- Individual relay failures are logged as warnings but don't reject the promise
+- Individual relay failures are logged as warnings but don't reject the promise. If every relay fails, `announceService` still resolves with the `eventId` of the signed event and logs `[402-announce] No relays accepted the event`
+- Relay and service URLs are checked against private and loopback patterns (see [URL and relay validation](#url-and-relay-validation)); DNS rebinding is not caught
 
 ## Ecosystem
 
