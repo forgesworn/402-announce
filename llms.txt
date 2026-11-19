@@ -2,6 +2,12 @@
 
 > Announce HTTP 402 services on Nostr for decentralised discovery
 
+## ForgeSworn ecosystem
+
+- [ForgeSworn library guide](https://forgesworn.dev/llms.txt): Find related libraries, tools and integration guides by task and runtime.
+- [ForgeSworn on GitHub](https://github.com/forgesworn): Browse the organisation’s public repositories.
+- [Project source](https://github.com/forgesworn/402-announce): Canonical source repository, documentation and release information.
+
 ## What it does
 
 402-announce publishes kind 31402 parameterised replaceable Nostr events that describe paid HTTP APIs. AI agents and Nostr clients discover these announcements to find services they can pay for and consume — no central registry needed.
